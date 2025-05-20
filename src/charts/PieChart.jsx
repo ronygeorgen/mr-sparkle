@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useThemeProvider } from '../utils/ThemeContext';
 
-import { chartColors } from './ChartjsConfig';
 import {
   Chart, PieController, ArcElement, TimeScale, Tooltip,
 } from 'chart.js';
@@ -21,22 +20,13 @@ const stacatrucColors = {
   purple: '#8E44AD',
 };
 
-// Chart colors with dark mode variants
-const chartColorScheme = {
-  light: [
-    stacatrucColors.green,
-    stacatrucColors.blue,
-    stacatrucColors.clarkGreen,
-    stacatrucColors.orange,
-    stacatrucColors.purple,
-  ],
-  dark: [
-    stacatrucColors.green,
-    stacatrucColors.blue,
-    stacatrucColors.clarkGreen,
-    stacatrucColors.orange,
-    stacatrucColors.purple,
-  ]
+// Fixed color mapping for lead sources
+const leadSourceColorMap = {
+  'Google Ads': stacatrucColors.green,
+  'GBP Organic': stacatrucColors.blue,
+  'Facebook Groups': stacatrucColors.clarkGreen,
+  'Referrals': stacatrucColors.orange,
+  'Door Knocking': stacatrucColors.purple,
 };
 
 // Custom tooltip colors that match the Stacatruc theme
@@ -62,12 +52,10 @@ const stacatrucTooltipColors = {
 function PieChart({
   data,
   width,
-  height,
-  onSegmentClick
+  height
 }) {
   const [chart, setChart] = useState(null);
   const canvas = useRef(null);
-  const legend = useRef(null);
   const { currentTheme } = useThemeProvider();
   const darkMode = currentTheme === 'dark';
 
@@ -75,33 +63,12 @@ function PieChart({
   const prepareChartData = (sourceData) => {
     if (!sourceData) return null;
     
-    // Create a color mapping for lead sources
-    const leadSourceColorMap = {
-      'Google Ads': stacatrucColors.green,
-      'GBP Organic': stacatrucColors.blue,
-      'Facebook Groups': stacatrucColors.clarkGreen,
-      'Referrals': stacatrucColors.orange,
-      'Door Knocking': stacatrucColors.purple,
-    };
-    
     return {
       ...sourceData,
       datasets: sourceData.datasets.map(dataset => ({
         ...dataset,
-        backgroundColor: sourceData.labels.map((label) => 
-          leadSourceColorMap[label] || chartColorScheme[darkMode ? 'dark' : 'light'][
-            sourceData.labels.indexOf(label) % chartColorScheme.light.length
-          ]
-        ),
-        hoverBackgroundColor: sourceData.labels.map((label) => {
-          const baseColor = leadSourceColorMap[label] || 
-            chartColorScheme[darkMode ? 'dark' : 'light'][
-              sourceData.labels.indexOf(label) % chartColorScheme.light.length
-            ];
-          
-          // Brighten the color slightly for hover effect
-          return baseColor;
-        }),
+        backgroundColor: sourceData.labels.map((label) => leadSourceColorMap[label] || stacatrucColors.medGrey),
+        hoverBackgroundColor: sourceData.labels.map((label) => leadSourceColorMap[label] || stacatrucColors.medGrey),
         borderWidth: 0,
       }))
     };
@@ -117,11 +84,43 @@ function PieChart({
       data: chartData,
       options: {
         layout: {
-          padding: 24,
+          padding: {
+            top: 12,
+            right: 20,
+            bottom: 12,
+            left: 20
+          },
         },
         plugins: {
           legend: {
-            display: false,
+            display: true,
+            position: 'bottom',
+            labels: {
+              usePointStyle: true,
+              padding: 16,
+              boxWidth: 10,
+              color: darkMode ? stacatrucColors.lightGrey : stacatrucColors.darkGrey,
+              generateLabels: function(chart) {
+                const data = chart.data;
+                if (data.labels.length && data.datasets.length) {
+                  return data.labels.map(function(label, i) {
+                    const meta = chart.getDatasetMeta(0);
+                    const style = meta.controller.getStyle(i);
+                    
+                    return {
+                      text: label,
+                      fillStyle: style.backgroundColor,
+                      strokeStyle: style.borderColor,
+                      lineWidth: style.borderWidth,
+                      hidden: false, // Important: never hide the legend items
+                      index: i
+                    };
+                  });
+                }
+                return [];
+              }
+            },
+            onClick: null // Disable legend item click handler
           },
           tooltip: {
             titleColor: darkMode ? stacatrucTooltipColors.titleColor.dark : stacatrucTooltipColors.titleColor.light,
@@ -161,59 +160,7 @@ function PieChart({
         },
         maintainAspectRatio: false,
         resizeDelay: 200,
-        onClick: (event, elements) => {
-          if (elements.length > 0 && onSegmentClick) {
-            const index = elements[0].index;
-            onSegmentClick(index, data.labels[index]);
-          }
-        },
       },
-      plugins: [
-        {
-          id: 'htmlLegend',
-          afterUpdate(c, args, options) {
-            const ul = legend.current;
-            if (!ul) return;
-            // Remove old legend items
-            while (ul.firstChild) {
-              ul.firstChild.remove();
-            }
-            // Reuse the built-in legendItems generator
-            const items = c.options.plugins.legend.labels.generateLabels(c);
-            items.forEach((item) => {
-              const li = document.createElement('li');
-              li.style.margin = '4px';
-              // Button element
-              const button = document.createElement('button');
-              button.classList.add('btn-xs', 'bg-white', 'dark:bg-gray-700', 'text-gray-500', 'dark:text-gray-400', 'shadow-xs', 'shadow-black/[0.08]', 'rounded-full');
-              button.style.opacity = item.hidden ? '.3' : '';
-              button.onclick = () => {
-                c.toggleDataVisibility(item.index);
-                c.update();
-              };
-              // Color box
-              const box = document.createElement('span');
-              box.style.display = 'block';
-              box.style.width = '8px';
-              box.style.height = '8px';
-              box.style.backgroundColor = item.fillStyle;
-              box.style.borderRadius = '4px';
-              box.style.marginRight = '4px';
-              box.style.pointerEvents = 'none';
-              // Label
-              const label = document.createElement('span');
-              label.style.display = 'flex';
-              label.style.alignItems = 'center';
-              const labelText = document.createTextNode(item.text);
-              label.appendChild(labelText);
-              li.appendChild(button);
-              button.appendChild(box);
-              button.appendChild(label);
-              ul.appendChild(li);
-            });
-          },
-        },
-      ],
     });
     setChart(newChart);
     return () => newChart.destroy();
@@ -224,41 +171,22 @@ function PieChart({
   useEffect(() => {
     if (!chart || !data) return;
     
-    // Create a color mapping for lead sources
-    const leadSourceColorMap = {
-      'Google Ads': stacatrucColors.green,
-      'GBP Organic': stacatrucColors.blue,
-      'Facebook Groups': stacatrucColors.clarkGreen, 
-      'Referrals': stacatrucColors.orange,
-      'Door Knocking': stacatrucColors.purple,
-    };
-    
     // Update data values if they changed
     chart.data.labels = data.labels;
     chart.data.datasets.forEach((dataset, i) => {
       dataset.data = data.datasets[i].data;
-      dataset.backgroundColor = data.labels.map(label => 
-        leadSourceColorMap[label] || chartColorScheme[darkMode ? 'dark' : 'light'][
-          data.labels.indexOf(label) % chartColorScheme.light.length
-        ]
-      );
-      dataset.hoverBackgroundColor = data.labels.map(label => 
-        leadSourceColorMap[label] || chartColorScheme[darkMode ? 'dark' : 'light'][
-          data.labels.indexOf(label) % chartColorScheme.light.length
-        ]
-      );
+      dataset.backgroundColor = data.labels.map(label => leadSourceColorMap[label] || stacatrucColors.medGrey);
+      dataset.hoverBackgroundColor = data.labels.map(label => leadSourceColorMap[label] || stacatrucColors.medGrey);
+      dataset.tooltipData = data.datasets[i].tooltipData;
     });
     
     chart.update();
   }, [data, chart, darkMode]);
 
   return (
-    <div className="grow flex flex-col justify-center cursor-pointer">
-      <div>
+    <div className="grow flex flex-col justify-center">
+      <div className="h-80">
         <canvas ref={canvas} width={width} height={height}></canvas>
-      </div>
-      <div className="px-5 pt-2 pb-6">
-        <ul ref={legend} className="flex flex-wrap justify-center -m-1"></ul>
       </div>
     </div>
   );

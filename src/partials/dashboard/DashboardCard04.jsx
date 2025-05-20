@@ -1,75 +1,78 @@
-import React, { useState } from 'react';
-import BarChart from '../../charts/BarChart01';
-import Modal from '../../components/ChartModal';
-import { getCssVariable } from '../../utils/Utils';
+import React, { useState, useEffect } from 'react';
+import BarChart01 from '../../charts/BarChart01'
+import { axiosInstance } from '../../services/api'
 
 function DashboardCard04() {
-  const [showModal, setShowModal] = useState(false);
-  const [modalData, setModalData] = useState(null);
+  const [revenueData, setRevenueData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const chartData = {
-    labels: [
-      '12-01-2022', '01-01-2023', '02-01-2023',
-      '03-01-2023', '04-01-2023', '05-01-2023',
-    ],
-    datasets: [
-      {
-        label: 'Total',
-        data: [
-          800, 1600, 900, 1300, 1950, 1700,
-        ],
-        backgroundColor: getCssVariable('--secondary'),
-        hoverBackgroundColor: getCssVariable('--secondary-dark'),
-        barPercentage: 0.7,
-        categoryPercentage: 0.7,
-        borderRadius: 4,
-      },
-      // {
-      //   label: 'Indirect',
-      //   data: [
-      //     4900, 2600, 5350, 4800, 5200, 4800,
-      //   ],
-      //   backgroundColor: getCssVariable('--primary'),
-      //   hoverBackgroundColor: getCssVariable('--primary-dark'),
-      //   barPercentage: 0.7,
-      //   categoryPercentage: 0.7,
-      //   borderRadius: 4,
-      // },
-    ],
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await axiosInstance.get('/dashboard/', {
+          params: {
+            start_date: '2025-01-01',
+            end_date: '2025-03-20'
+          }
+        });
+        
+        if (response.data && response.data.revenue_trend) {
+          // Format the data for the chart
+          const formattedData = response.data.revenue_trend.map(item => ({
+            name: `${item.month.substring(0, 3)} ${item.year}`,
+            value: parseFloat(item.value.toFixed(2))
+          }));
+          
+          setRevenueData(formattedData);
+        }
+      } catch (err) {
+        console.error('Error fetching revenue data:', err);
+        setError('Failed to load revenue data. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2
+    }).format(value);
   };
 
-  const handleBarClick = ({ datasetIndex, index }) => {
-    console.log(`Clicked dataset ${datasetIndex}, index ${index}`);
-    // Get additional data for the modal
-    const dataset = chartData.datasets[datasetIndex];
-    const label = chartData.labels[index];
-    const value = dataset.data[index];
-    
-    setModalData({ 
-      datasetIndex, 
-      index,
-      label,
-      value,
-      datasetLabel: dataset.label
-    });
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-    // Use a short timeout to avoid UI flicker
-    setTimeout(() => setModalData(null), 200);
-  };
+  const totalRevenue = revenueData.reduce((sum, item) => sum + item.value, 0);
+  const formattedTotal = formatCurrency(totalRevenue);
 
   return (
-    <div className="flex flex-col col-span-full sm:col-span-full md:col-span-full lg:col-span-full bg-white dark:bg-gray-800 shadow-xs rounded-xl">
+    <div className="flex flex-col col-span-full sm:col-span-full md:col-span-full lg:col-span-full bg-white dark:bg-gray-800 shadow-md rounded-xl">
       <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
         <h2 className="font-semibold text-gray-800 dark:text-gray-100">Revenue Trend Chart</h2>
       </header>
-      <BarChart data={chartData} width={795} height={248} onBarClick={handleBarClick} />
       
-      {/* Modal component */}
-      <Modal isOpen={showModal} onClose={closeModal} data={modalData} />
+      <div className="px-5 pt-3">
+        <div className="flex items-start">
+          <div className="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2">{formattedTotal}</div>
+          <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-2">Total</div>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500 dark:text-gray-400">Loading revenue data...</div>
+        </div>
+      ) : error ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-red-500">{error}</div>
+        </div>
+      ) : (
+        <BarChart01 data={revenueData} width={795} height={248} />
+      )}
     </div>
   );
 }

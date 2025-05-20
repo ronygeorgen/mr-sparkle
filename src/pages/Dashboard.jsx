@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// Dashboard.jsx
+import React, { useState, useEffect } from 'react';
 
 import Sidebar from '../partials/Sidebar';
 import Header from '../partials/Header';
@@ -15,6 +16,7 @@ import SourceCard from '../charts/SourceCard';
 import ProductsCard from '../charts/ProductsCard';
 import LeadsGeneratedCard from '../components/LeadsGeneratedCard';
 import KpiCard from '../components/KpiCard';
+import LeadsGeneratedSmallCard from '../components/LeadsGeneratedSmallCard';
 import ConversionRateGauge from '../components/ConversionRateGauge';
 import DashboardCardSalesPerfMatrics from '../partials/dashboard/DashboardCardSalesPerfMatrics';
 import DashboardCard07 from '../partials/dashboard/DashboardCard07';
@@ -25,20 +27,60 @@ import DashboardCard11 from '../partials/dashboard/DashboardCard11';
 import DashboardCard12 from '../partials/dashboard/DashboardCard12';
 import DashboardCard13 from '../partials/dashboard/DashboardCard13';
 import { getCssVariable } from '../utils/Utils';
+import { axiosInstance } from '../services/api';
 
 function Dashboard() {
-
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [dashboardData, setDashboardData] = useState({
+    revenue_trend: [],
+    sales_performance: {
+      leads_generated: 0,
+      quotes_sent: 0,
+      jobs_booked: 0,
+      conversion_rate: 0,
+      average_job_value: 0,
+      total_sales: 0
+    }
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [dateRange, setDateRange] = useState({
+    startDate: '2025-01-01',
+    endDate: '2025-03-20'
+  });
 
-  const leads = [80, 120, 95, 130, 160];
-  const quotes = [60, 100, 80, 110, 140];
-  const jobs = [40, 80, 60, 90, 120];
-  const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'];
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const response = await axiosInstance.get('/dashboard/', {
+          params: {
+            start_date: dateRange.startDate,
+            end_date: dateRange.endDate
+          }
+        });
+        
+        setDashboardData(response.data);
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError('Failed to load dashboard data. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const totalSales = 25000;
-  const totalJobs = jobs.reduce((acc, curr) => acc + curr, 0);
-  const avgJobValue = (totalSales / totalJobs).toFixed(2);
-  const conversionRate = ((jobs.reduce((a, b) => a + b, 0) / quotes.reduce((a, b) => a + b, 0)) * 100).toFixed(1);
+    fetchDashboardData();
+  }, [dateRange]);
+
+  // Handle date change from datepicker
+  const handleDateChange = (startDate, endDate) => {
+    setDateRange({
+      startDate,
+      endDate
+    });
+  };
+
+  const { sales_performance } = dashboardData;
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -65,84 +107,76 @@ function Dashboard() {
 
               {/* Right: Actions */}
               <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-                {/* Filter button */}
-                {/* <FilterButton align="right" /> */}
                 {/* Datepicker built with React Day Picker */}
-                <Datepicker align="right" />  
-                {/* Add view button */}
-                {/* <button 
-                className="btn text-white hover:brightness-110"
-                style={{ 
-                  backgroundColor: getCssVariable('--tertiary'),
-                  ':hover': { backgroundColor: getCssVariable('--tertiary-dark') }
-                }}
-                >
-                  <svg className="fill-current shrink-0 xs:hidden" width="16" height="16" viewBox="0 0 16 16">
-                    <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z" />
-                  </svg>
-                  <span className="max-xs:sr-only">Add View</span>
-                </button>                 */}
+                <Datepicker align="right" onDateChange={handleDateChange} />  
               </div>
 
             </div>
+
+            {/* Loading state */}
+            {loading && (
+              <div className="text-center py-10">
+                <div className="text-gray-500 dark:text-gray-400">Loading dashboard data...</div>
+              </div>
+            )}
+
+            {/* Error state */}
+            {error && (
+              <div className="text-center py-10">
+                <div className="text-red-500">{error}</div>
+              </div>
+            )}
 
             {/* Cards */}
-            <div className="grid grid-cols-12 gap-6">
+            {!loading && !error && (
+              <div className="grid grid-cols-12 gap-6">
+                {/* Bar chart (Revenue) */}
+                <DashboardCard04 />
 
-              {/* Bar chart (Revenue) */}
-              <DashboardCard04 />
-              {/* Sales performance matrics */}
+                {/* Sales performance metrics */}
+                <div className="col-span-3 grid grid-cols-6 gap-6 justify-between">
+                  <KpiCard 
+                    title="Quotes Sent" 
+                    value={sales_performance.quotes_sent} 
+                    unit="" 
+                    subtitle="This Period" 
+                  />
+                  <KpiCard 
+                    title="Jobs Booked" 
+                    value={sales_performance.jobs_booked} 
+                    unit="" 
+                    subtitle="Confirmed" 
+                  />
+                  <ConversionRateGauge 
+                    percentage={parseFloat(sales_performance.conversion_rate.toFixed(1))} 
+                  />
+                  <KpiCard 
+                    title="Avg. Job Value" 
+                    value={sales_performance.average_job_value.toFixed(2)} 
+                    unit="$" 
+                    subtitle="This Period" 
+                  />
+                </div>
+                
+                {/* Leads Generated Card */}
+                <div className="col-span-4">
+                  <LeadsGeneratedSmallCard 
+                    title="Leads Generated" 
+                    value={sales_performance.leads_generated} 
+                    unit="" 
+                    subtitle="This Period" 
+                  />
+                </div>
 
-              <div className="col-span-3 grid grid-cols-6 gap-6 justify-between ">
-                <KpiCard title="Quotes Sent" value={quotes.reduce((a, b) => a + b, 0)} unit="" subtitle="This Period" />
-                <KpiCard title="Jobs Booked" value={totalJobs} unit="" subtitle="Confirmed" />
-                <ConversionRateGauge percentage={conversionRate} />
-                <KpiCard title="Avg. Job Value" value={avgJobValue} unit="$" subtitle="This Period" />
+                {/* Pie chart */}
+                <DashboardCard06 />
+                <DashboardCard07 /> 
+                
+                {/* Other cards here */}
               </div>
-              
-              {/* Row 2: Right col-6 (Leads Generated Card) */}
-              <div className="col-span-9">
-                <LeadsGeneratedCard data={leads} labels={labels} />
-              </div>
-
-              {/* Pie chart */}
-              <DashboardCard06 />
-              <DashboardCard07 /> 
-              
-              {/* <DashboardCardSalesPerfMatrics/> */}
-              {/* Line chart (Acme Plus) */}
-              {/* <DashboardCard01 /> */}
-              {/* <DashboardCard03 /> */}
-              {/* Line chart (Acme Advanced) */}
-              {/* <DashboardCard02 /> */}
-              {/* Line chart (Acme Professional) */}
-              {/* <DashboardCard05 /> */}
-              {/* Line chart (Real Time Value) */}
-              {/* <DashboardCard05 /> */}
-              {/* Leader board card */}
-              {/* <LeaderboardCard /> */}
-              {/* <SourceCard/> */}
-              {/* <ProductsCard/> */}
-              {/* Table (Top Channels) */}
-              {/* Line chart (Sales Over Time) */}
-              {/* <DashboardCard08 /> */}
-              {/* Stacked bar chart (Sales VS Refunds) */}
-              {/* <DashboardCard09 /> */}
-              {/* Card (Customers) */}
-              {/* <DashboardCard10 /> */}
-              {/* Card (Reasons for Refunds) */}
-              {/* <DashboardCard11 /> */}
-              {/* Card (Recent Activity) */}
-              {/* <DashboardCard12 /> */}
-              {/* Card (Income/Expenses) */}
-              {/* <DashboardCard13 /> */}
-              
-            </div>
-
+            )}
           </div>
         </main>
-
-
       </div>
     </div>
   );
