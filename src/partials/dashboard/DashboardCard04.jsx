@@ -11,7 +11,7 @@ function DashboardCard04() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get('/dashboard/', {
+        const response = await axiosInstance.get('/data/dashboard/', {
           params: {
             start_date: '2025-01-01',
             end_date: '2025-03-20'
