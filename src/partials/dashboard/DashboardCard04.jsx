@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import BarChart01 from '../../charts/BarChart01'
 import { axiosInstance } from '../../services/api'
+import { useFiscalPeriod } from '../../contexts/FiscalPeriodContext';
 
 function DashboardCard04() {
   const [revenueData, setRevenueData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { dateRange } = useFiscalPeriod();
+  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -13,8 +16,8 @@ function DashboardCard04() {
         setLoading(true);
         const response = await axiosInstance.get('/data/dashboard/', {
           params: {
-            start_date: '2025-01-01',
-            end_date: '2025-03-20'
+            start_date: dateRange.from.toISOString().split('T')[0],
+            end_date: dateRange.to.toISOString().split('T')[0],
           }
         });
         

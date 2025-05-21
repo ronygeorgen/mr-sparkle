@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import PieChart from '../../charts/PieChart';
 import { axiosInstance } from '../../services/api';
+import { useFiscalPeriod } from '../../contexts/FiscalPeriodContext';
 
 function DashboardCard06() {
   const [loading, setLoading] = useState(true);
   const [leadSourceData, setLeadSourceData] = useState(null);
-  const [dateRange, setDateRange] = useState({
-    startDate: '2025-01-01',
-    endDate: '2025-03-20'
-  });
+  const { dateRange } = useFiscalPeriod();
+  
 
   // Define the categories we want to display
   const categoriesToShow = [
@@ -73,8 +72,8 @@ function DashboardCard06() {
         setLoading(true);
         const response = await axiosInstance.get('/data/dashboard/', {
           params: {
-            start_date: dateRange?.startDate,
-            end_date: dateRange?.endDate
+            start_date: dateRange.from.toISOString().split('T')[0],
+            end_date: dateRange.to.toISOString().split('T')[0],
           }
         });
         

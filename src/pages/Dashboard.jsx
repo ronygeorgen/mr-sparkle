@@ -28,6 +28,7 @@ import DashboardCard12 from '../partials/dashboard/DashboardCard12';
 import DashboardCard13 from '../partials/dashboard/DashboardCard13';
 import { getCssVariable } from '../utils/Utils';
 import { axiosInstance } from '../services/api';
+import { useFiscalPeriod } from '../contexts/FiscalPeriodContext';
 
 function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -44,10 +45,9 @@ function Dashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [dateRange, setDateRange] = useState({
-    startDate: '2025-01-01',
-    endDate: '2025-03-20'
-  });
+  const { dateRange } = useFiscalPeriod();
+
+  
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -55,8 +55,8 @@ function Dashboard() {
         setLoading(true);
         const response = await axiosInstance.get('/data/dashboard/', {
           params: {
-            start_date: dateRange.startDate,
-            end_date: dateRange.endDate
+            start_date: dateRange.from.toISOString().split('T')[0],
+            end_date: dateRange.to.toISOString().split('T')[0],
           }
         });
         
@@ -72,13 +72,7 @@ function Dashboard() {
     fetchDashboardData();
   }, [dateRange]);
 
-  // Handle date change from datepicker
-  const handleDateChange = (startDate, endDate) => {
-    setDateRange({
-      startDate,
-      endDate
-    });
-  };
+
 
   const { sales_performance } = dashboardData;
 
@@ -108,7 +102,7 @@ function Dashboard() {
               {/* Right: Actions */}
               <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
                 {/* Datepicker built with React Day Picker */}
-                <Datepicker align="right" onDateChange={handleDateChange} />  
+                <Datepicker align="right" />  
               </div>
 
             </div>
