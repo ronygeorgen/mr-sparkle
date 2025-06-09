@@ -2,12 +2,21 @@ import React, { useState, useEffect } from 'react';
 import PieChart from '../../charts/PieChart';
 import { axiosInstance } from '../../services/api';
 import { useFiscalPeriod } from '../../contexts/FiscalPeriodContext';
+import CardDetailModal from '../../components/CardDetailModal';
+import OpportunityTable from '../../components/OpportunityTable';
+import { opportunityAPI } from '../../features/opportunity/opportunityAPI';
 
 function DashboardCard06() {
   const [loading, setLoading] = useState(true);
   const [leadSourceData, setLeadSourceData] = useState(null);
-  const { dateRange } = useFiscalPeriod();
+  const { dateRange, periodLabel } = useFiscalPeriod();
   
+  const [showModal, setShowModal] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalOpportunities, setModalOpportunities] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [selectedSource, setSelectedSource] = useState('');
 
   // Define the categories we want to display
   const categoriesToShow = [
@@ -66,6 +75,48 @@ function DashboardCard06() {
     return processedData;
   };
 
+  const fetchOpportunities = React.useCallback(async (page = 1, source) => {
+    try {
+      const params = {
+        searchQuery: "",
+        page: page,
+        opportunity_source: source
+      };
+      
+      const data = await opportunityAPI.getOpportunities(
+        params.searchQuery,
+        params.page,
+        params.pageSize,
+        params.fiscal_period,
+        params.created_at_min,
+        params.created_at_max,
+        params.state,
+        params.pipeline,
+        params.stage_name,
+        params.assigned_to,
+        params.contact,
+        params.opportunity_source,
+      );
+      
+      setModalOpportunities(data.results || []);
+      setTotalCount(data.count || 0);
+      setCurrentPage(page);
+    } catch (error) {
+      console.error('Error fetching opportunities:', error);
+    }
+  }, []);
+
+  const handlePieClick = (source) => {
+    setSelectedSource(source);
+    setIsModalOpen(true);
+    setShowModal(true);
+    fetchOpportunities(1, source);
+  };
+
+  const handlePageChange = (page) => {
+    fetchOpportunities(page, selectedSource);
+  };
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -103,9 +154,31 @@ function DashboardCard06() {
           <PieChart 
             data={leadSourceData} 
             width={389} 
-            height={320} 
+            height={320}
+            onSegmentClick={handlePieClick}
           />
         )
+      )}
+
+      {showModal && (
+        <CardDetailModal 
+          isOpen={isModalOpen} 
+          onClose={() => {
+            setIsModalOpen(false);
+            setShowModal(false);
+            setModalOpportunities([]);
+            setCurrentPage(1);
+            setTotalCount(0);
+          }}
+          title={`${selectedSource} Opportunities - ${periodLabel}`}
+        >
+          <OpportunityTable 
+            opportunities={modalOpportunities} 
+            currentPage={currentPage}
+            totalCount={totalCount}
+            onPageChange={handlePageChange}
+          />
+        </CardDetailModal>
       )}
     </div>
   );

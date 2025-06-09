@@ -52,7 +52,8 @@ const stacatrucTooltipColors = {
 function PieChart({
   data,
   width,
-  height
+  height,
+  onSegmentClick
 }) {
   const [chart, setChart] = useState(null);
   const canvas = useRef(null);
@@ -160,6 +161,15 @@ function PieChart({
         },
         maintainAspectRatio: false,
         resizeDelay: 200,
+        onClick: (event, elements) => {
+          if (elements && elements.length > 0) {
+            const index = elements[0].index;
+            const label = data.labels[index];
+            if (onSegmentClick) {
+              onSegmentClick(label);
+            }
+          }
+        }
       },
     });
     setChart(newChart);

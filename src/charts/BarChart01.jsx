@@ -1,7 +1,7 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-function BarChart01({ data, width, height }) {
+function BarChart01({ data, width, height, onBarClick }) {
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -21,6 +21,20 @@ function BarChart01({ data, width, height }) {
       );
     }
     return null;
+  };
+
+  const handleBarClick = (data) => {
+    if (onBarClick) {
+      // Extract month and year from the name (format: "MMM YYYY")
+      const [month, year] = data.name.split(' ');
+      onBarClick({
+        datasetIndex: 0,
+        payload: {
+          created_at_min: month,
+          created_at_max: year
+        }
+      });
+    }
   };
 
   return (
@@ -43,6 +57,8 @@ function BarChart01({ data, width, height }) {
             dataKey="value" 
             fill="#0EA5E9" 
             radius={[4, 4, 0, 0]}
+            onClick={handleBarClick}
+            cursor="pointer"
           />
         </BarChart>
       </ResponsiveContainer>

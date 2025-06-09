@@ -131,22 +131,22 @@ function Dashboard() {
                 <div className="col-span-3 grid grid-cols-6 gap-6 justify-between">
                   <KpiCard 
                     title="Quotes Sent" 
-                    value={sales_performance.quotes_sent} 
+                    value={sales_performance?.quotes_sent} 
                     unit="" 
                     subtitle="This Period" 
                   />
                   <KpiCard 
                     title="Jobs Booked" 
-                    value={sales_performance.jobs_booked} 
+                    value={sales_performance?.jobs_booked} 
                     unit="" 
                     subtitle="Confirmed" 
                   />
                   <ConversionRateGauge 
-                    percentage={parseFloat(sales_performance.conversion_rate.toFixed(1))} 
+                    percentage={parseFloat(sales_performance?.conversion_rate.toFixed(1))} 
                   />
                   <KpiCard 
                     title="Avg. Job Value" 
-                    value={sales_performance.average_job_value.toFixed(2)} 
+                    value={sales_performance?.average_job_value.toFixed(2)} 
                     unit="$" 
                     subtitle="This Period" 
                   />
@@ -156,7 +156,7 @@ function Dashboard() {
                 <div className="col-span-4">
                   <LeadsGeneratedSmallCard 
                     title="Leads Generated" 
-                    value={sales_performance.leads_generated} 
+                    value={sales_performance?.leads_generated} 
                     unit="" 
                     subtitle="This Period" 
                   />
