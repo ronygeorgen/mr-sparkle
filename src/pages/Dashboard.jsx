@@ -1,32 +1,14 @@
 // Dashboard.jsx
 import React, { useState, useEffect } from 'react';
 
-import Sidebar from '../partials/Sidebar';
 import Header from '../partials/Header';
-import FilterButton from '../components/DropdownFilter';
 import Datepicker from '../components/Datepicker';
-import DashboardCard01 from '../partials/dashboard/DashboardCard01';
-import DashboardCard02 from '../partials/dashboard/DashboardCard02';
-import DashboardCard03 from '../partials/dashboard/DashboardCard03';
 import DashboardCard04 from '../partials/dashboard/DashboardCard04';
-import DashboardCard05 from '../partials/dashboard/DashboardCard05';
 import DashboardCard06 from '../partials/dashboard/DashboardCard06';
-import LeaderboardCard from '../charts/LeaderboardCard';
-import SourceCard from '../charts/SourceCard';
-import ProductsCard from '../charts/ProductsCard';
-import LeadsGeneratedCard from '../components/LeadsGeneratedCard';
 import KpiCard from '../components/KpiCard';
 import LeadsGeneratedSmallCard from '../components/LeadsGeneratedSmallCard';
 import ConversionRateGauge from '../components/ConversionRateGauge';
-import DashboardCardSalesPerfMatrics from '../partials/dashboard/DashboardCardSalesPerfMatrics';
 import DashboardCard07 from '../partials/dashboard/DashboardCard07';
-import DashboardCard08 from '../partials/dashboard/DashboardCard08';
-import DashboardCard09 from '../partials/dashboard/DashboardCard09';
-import DashboardCard10 from '../partials/dashboard/DashboardCard10';
-import DashboardCard11 from '../partials/dashboard/DashboardCard11';
-import DashboardCard12 from '../partials/dashboard/DashboardCard12';
-import DashboardCard13 from '../partials/dashboard/DashboardCard13';
-import { getCssVariable } from '../utils/Utils';
 import { axiosInstance } from '../services/api';
 import { useFiscalPeriod } from '../contexts/FiscalPeriodContext';
 

@@ -63,7 +63,7 @@ export default function DatePicker({ className }) {
   ]
 
   return (
-    <div className={cn("grid gap-2 relative", className)}>
+    <div className={cn("flex items-center gap-2", className)}>
       {/* Dropdown */}
       <div className="relative" ref={dropdownRef}>
         <button

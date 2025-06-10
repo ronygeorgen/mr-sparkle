@@ -5,12 +5,13 @@ import { useFiscalPeriod } from '../../contexts/FiscalPeriodContext';
 import CardDetailModal from '../../components/CardDetailModal';
 import OpportunityTable from '../../components/OpportunityTable';
 import { opportunityAPI } from '../../features/opportunity/opportunityAPI';
+import DatePicker from '../../components/Datepicker';
 
 function DashboardCard04() {
   const [revenueData, setRevenueData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { dateRange, periodLabel } = useFiscalPeriod();
+  const { dateRange, periodLabel, setDateRange, setPeriodLabel } = useFiscalPeriod();
   
   const [showModal, setShowModal] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -18,7 +19,7 @@ function DashboardCard04() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [values, setValues] = useState({created_at_min:'', created_at_max:'', valueState:''});
-
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -112,9 +113,14 @@ function DashboardCard04() {
 
   return (
     <div className="flex flex-col col-span-full sm:col-span-full md:col-span-full lg:col-span-full bg-white dark:bg-gray-800 shadow-md rounded-xl">
-      <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-        <h2 className="font-semibold text-gray-800 dark:text-gray-100">Revenue Trend Chart</h2>
-      </header>
+    <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="font-semibold text-gray-800 dark:text-gray-100">
+          Revenue Trend Chart
+        </h2>
+        <DatePicker />
+      </div>
+    </header>
       
       <div className="px-5 pt-3">
         <div className="flex items-start">
