@@ -1,8 +1,11 @@
 import React from 'react';
 
-const KpiCard = ({ title, value, unit, subtitle }) => {
+const KpiCard = ({ title, value, unit, subtitle, onClick }) => {
   return (
-    <div className="flex flex-col sm:col-span-full md:col-span-3 xl:col-span-3 bg-white dark:bg-gray-800 shadow-xs rounded-xl p-5">
+    <div 
+      className="flex flex-col sm:col-span-full md:col-span-3 xl:col-span-3 bg-white dark:bg-gray-800 shadow-xs rounded-xl p-5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+      onClick={onClick}
+    >
       <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</h3>
       <div className="text-2xl font-bold text-gray-900 dark:text-white">{value}{unit}</div>
       {subtitle && <div className="text-xs text-gray-400 mt-1">{subtitle}</div>}

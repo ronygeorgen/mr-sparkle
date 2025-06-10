@@ -11,6 +11,9 @@ import ConversionRateGauge from '../components/ConversionRateGauge';
 import DashboardCard07 from '../partials/dashboard/DashboardCard07';
 import { axiosInstance } from '../services/api';
 import { useFiscalPeriod } from '../contexts/FiscalPeriodContext';
+import CardDetailModal from '../components/CardDetailModal';
+import OpportunityTable from '../components/OpportunityTable';
+import { opportunityAPI } from '../features/opportunity/opportunityAPI';
 
 function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -29,7 +32,84 @@ function Dashboard() {
   const [error, setError] = useState(null);
   const { dateRange } = useFiscalPeriod();
 
-  
+  // Add state for modal and opportunities
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalOpportunities, setModalOpportunities] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [selectedMetric, setSelectedMetric] = useState('');
+  const [modalLoading, setModalLoading] = useState(false);
+
+  // Function to fetch opportunities based on metric
+  const fetchOpportunities = async (page = 1, metric) => {
+    try {
+      setModalLoading(true);
+      const params = {
+        searchQuery: "",
+        page: page,
+        pageSize: 10
+      };
+
+      // Add date range if available
+      if (dateRange && dateRange.from) {
+        params.created_at_min = dateRange.from.toISOString().split('T')[0];
+        if (dateRange.to) {
+          params.created_at_max = dateRange.to.toISOString().split('T')[0];
+        }
+      }
+
+      // Add metric-specific filters
+      switch (metric) {
+        case 'quotes':
+          params.stage_name = ['Quote Sent'];
+          break;
+        case 'jobs':
+          params.stage_name = ['Job Booked'];
+          break;
+        case 'leads':
+          params.stage_name = ['New Lead'];
+          break;
+        case 'value':
+          params.stage_name = ['Job Booked'];
+          break;
+        default:
+          break;
+      }
+
+      const data = await opportunityAPI.getOpportunities(
+        params.searchQuery,
+        params.page,
+        params.pageSize,
+        params.fiscal_period,
+        params.created_at_min,
+        params.created_at_max,
+        params.state,
+        params.pipeline,
+        params.stage_name,
+        params.assigned_to,
+        params.contact,
+        params.opportunity_source,
+      );
+
+      setModalOpportunities(data.results || []);
+      setTotalCount(data.count || 0);
+      setCurrentPage(page);
+    } catch (error) {
+      console.error('Error fetching opportunities:', error);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleKpiClick = (metric) => {
+    setSelectedMetric(metric);
+    setIsModalOpen(true);
+    fetchOpportunities(1, metric);
+  };
+
+  const handlePageChange = (page) => {
+    fetchOpportunities(page, selectedMetric);
+  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -53,8 +133,6 @@ function Dashboard() {
 
     fetchDashboardData();
   }, [dateRange]);
-
-
 
   const { sales_performance } = dashboardData;
 
@@ -115,32 +193,37 @@ function Dashboard() {
                     title="Quotes Sent" 
                     value={sales_performance?.quotes_sent} 
                     unit="" 
-                    subtitle="This Period" 
+                    subtitle="This Period"
+                    onClick={() => handleKpiClick('quotes')}
                   />
                   <KpiCard 
                     title="Jobs Booked" 
                     value={sales_performance?.jobs_booked} 
                     unit="" 
-                    subtitle="Confirmed" 
+                    subtitle="Confirmed"
+                    onClick={() => handleKpiClick('jobs')}
                   />
                   <ConversionRateGauge 
                     percentage={parseFloat(sales_performance?.conversion_rate.toFixed(1))} 
+                    onClick={() => handleKpiClick('value')}
                   />
                   <KpiCard 
                     title="Avg. Job Value" 
                     value={sales_performance?.average_job_value.toFixed(2)} 
                     unit="$" 
-                    subtitle="This Period" 
+                    subtitle="This Period"
+                    onClick={() => handleKpiClick('value')}
                   />
                 </div>
                 
                 {/* Leads Generated Card */}
-                <div className="col-span-4">
+                <div className="col-span-4 cursor-pointer">
                   <LeadsGeneratedSmallCard 
                     title="Leads Generated" 
                     value={sales_performance?.leads_generated} 
                     unit="" 
-                    subtitle="This Period" 
+                    subtitle="This Period"
+                    onClick={() => handleKpiClick('leads')}
                   />
                 </div>
 
@@ -154,6 +237,21 @@ function Dashboard() {
           </div>
         </main>
       </div>
+
+      {/* Modal */}
+      <CardDetailModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)}
+        title={`${selectedMetric.charAt(0).toUpperCase() + selectedMetric.slice(1)} Opportunities - ${dateRange.from.toLocaleDateString()} to ${dateRange.to.toLocaleDateString()}`}
+      >
+        <OpportunityTable 
+          opportunities={modalOpportunities} 
+          currentPage={currentPage}
+          totalCount={totalCount}
+          onPageChange={handlePageChange}
+          loading={modalLoading}
+        />
+      </CardDetailModal>
     </div>
   );
 }
