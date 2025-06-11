@@ -183,41 +183,51 @@ function Dashboard() {
 
             {/* Cards */}
             {!loading && !error && (
-              <div className="grid grid-cols-12 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                 {/* Bar chart (Revenue) */}
-                <DashboardCard04 />
+                <div className="md:col-span-12 lg:col-span-8">
+                  <DashboardCard04 />
+                </div>
 
                 {/* Sales performance metrics */}
-                <div className="col-span-3 grid grid-cols-6 gap-6 justify-between">
-                  <KpiCard 
-                    title="Quotes Sent" 
-                    value={sales_performance?.quotes_sent} 
-                    unit="" 
-                    subtitle="This Period"
-                    onClick={() => handleKpiClick('quotes')}
-                  />
-                  <KpiCard 
-                    title="Jobs Booked" 
-                    value={sales_performance?.jobs_booked} 
-                    unit="" 
-                    subtitle="Confirmed"
-                    onClick={() => handleKpiClick('jobs')}
-                  />
-                  <ConversionRateGauge 
-                    percentage={parseFloat(sales_performance?.conversion_rate.toFixed(1))} 
-                    onClick={() => handleKpiClick('value')}
-                  />
-                  <KpiCard 
-                    title="Avg. Job Value" 
-                    value={sales_performance?.average_job_value.toFixed(2)} 
-                    unit="$" 
-                    subtitle="This Period"
-                    onClick={() => handleKpiClick('value')}
-                  />
+                <div className="md:col-span-12 lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 justify-between">
+                  <div className="sm:col-span-1 lg:col-span-3">
+                    <KpiCard 
+                      title="Quotes Sent" 
+                      value={sales_performance?.quotes_sent} 
+                      unit="" 
+                      subtitle="This Period"
+                      onClick={() => handleKpiClick('quotes')}
+                    />
+                  </div>
+                  <div className="sm:col-span-1 lg:col-span-3">
+                    <KpiCard 
+                      title="Jobs Booked" 
+                      value={sales_performance?.jobs_booked} 
+                      unit="" 
+                      subtitle="Confirmed"
+                      onClick={() => handleKpiClick('jobs')}
+                    />
+                  </div>
+                  <div className="sm:col-span-1 lg:col-span-3">
+                    <ConversionRateGauge 
+                      percentage={parseFloat(sales_performance?.conversion_rate.toFixed(1))} 
+                      onClick={() => handleKpiClick('value')}
+                    />
+                  </div>
+                  <div className="sm:col-span-1 lg:col-span-3">
+                    <KpiCard 
+                      title="Avg. Job Value" 
+                      value={sales_performance?.average_job_value.toFixed(2)} 
+                      unit="$" 
+                      subtitle="This Period"
+                      onClick={() => handleKpiClick('value')}
+                    />
+                  </div>
                 </div>
                 
                 {/* Leads Generated Card */}
-                <div className="col-span-4 cursor-pointer">
+                <div className="md:col-span-6 lg:col-span-4 cursor-pointer">
                   <LeadsGeneratedSmallCard 
                     title="Leads Generated" 
                     value={sales_performance?.leads_generated} 
@@ -228,10 +238,12 @@ function Dashboard() {
                 </div>
 
                 {/* Pie chart */}
-                <DashboardCard06 />
-                <DashboardCard07 /> 
-                
-                {/* Other cards here */}
+                <div className="md:col-span-6 lg:col-span-4">
+                  <DashboardCard06 />
+                </div>
+                <div className="md:col-span-12 lg:col-span-4">
+                  <DashboardCard07 />
+                </div>
               </div>
             )}
           </div>

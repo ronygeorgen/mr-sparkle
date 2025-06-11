@@ -71,15 +71,19 @@ function PieChart({
         backgroundColor: sourceData.labels.map((label) => leadSourceColorMap[label] || stacatrucColors.medGrey),
         hoverBackgroundColor: sourceData.labels.map((label) => leadSourceColorMap[label] || stacatrucColors.medGrey),
         borderWidth: 0,
+        hoverOffset: 12, // Makes the segment pop out on hover
+        hoverBorderColor: '#fff', // White border on hover for contrast
+        hoverBorderWidth: 2,
       }))
     };
   };
 
   useEffect(() => {
     const ctx = canvas.current;
+    if (!ctx) return;
     // Create chart with Stacatruc colors
     const chartData = prepareChartData(data);
-    
+
     const newChart = new Chart(ctx, {
       type: 'pie',
       data: chartData,
@@ -107,7 +111,6 @@ function PieChart({
                   return data.labels.map(function(label, i) {
                     const meta = chart.getDatasetMeta(0);
                     const style = meta.controller.getStyle(i);
-                    
                     return {
                       text: label,
                       fillStyle: style.backgroundColor,
@@ -173,14 +176,21 @@ function PieChart({
       },
     });
     setChart(newChart);
-    return () => newChart.destroy();
+    return () => {
+      if (newChart) {
+        newChart.destroy();
+      }
+      setChart(null);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update chart when data changes
   useEffect(() => {
     if (!chart || !data) return;
-    
+    // Prevent update if chart is destroyed
+    if (chart._destroyed) return;
+
     // Update data values if they changed
     chart.data.labels = data.labels;
     chart.data.datasets.forEach((dataset, i) => {
@@ -189,7 +199,7 @@ function PieChart({
       dataset.hoverBackgroundColor = data.labels.map(label => leadSourceColorMap[label] || stacatrucColors.medGrey);
       dataset.tooltipData = data.datasets[i].tooltipData;
     });
-    
+
     chart.update();
   }, [data, chart, darkMode]);
 
