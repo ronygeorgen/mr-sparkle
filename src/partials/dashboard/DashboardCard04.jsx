@@ -5,7 +5,7 @@ import { useFiscalPeriod } from '../../contexts/FiscalPeriodContext';
 import CardDetailModal from '../../components/CardDetailModal';
 import OpportunityTable from '../../components/OpportunityTable';
 import { opportunityAPI } from '../../features/opportunity/opportunityAPI';
-import DatePicker from '../../components/Datepicker';
+import SubDatePicker from '../../components/SubDatePicker';
 
 function DashboardCard04() {
   const [revenueData, setRevenueData] = useState([]);
@@ -20,33 +20,34 @@ function DashboardCard04() {
   const [totalCount, setTotalCount] = useState(0);
   const [values, setValues] = useState({created_at_min:'', created_at_max:'', valueState:''});
   
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const response = await axiosInstance.get('/data/dashboard/', {
-          params: {
-            start_date: dateRange.from.toISOString().split('T')[0],
-            end_date: dateRange.to.toISOString().split('T')[0],
-          }
-        });
-        
-        if (response.data && response.data.revenue_trend) {
-          // Format the data for the chart
-          const formattedData = response.data.revenue_trend.map(item => ({
-            name: `${item.month.substring(0, 3)} ${item.year}`,
-            value: parseFloat(item.value.toFixed(2))
-          }));
-          
-          setRevenueData(formattedData);
+  const fetchData = async (SubDateRange = null) => {
+    try {
+      setLoading(true);
+      const effectiveRange  = SubDateRange || dateRange;
+      const response = await axiosInstance.get('/data/dashboard/', {
+        params: {
+          start_date: effectiveRange .from.toISOString().split('T')[0],
+          end_date: effectiveRange .to.toISOString().split('T')[0],
         }
-      } catch (err) {
-        console.error('Error fetching revenue data:', err);
-        setError('Failed to load revenue data. Please try again later.');
-      } finally {
-        setLoading(false);
+      });
+      
+      if (response.data && response.data.revenue_trend) {
+        // Format the data for the chart
+        const formattedData = response.data.revenue_trend.map(item => ({
+          name: `${item.month.substring(0, 3)} ${item.year}`,
+          value: parseFloat(item.value.toFixed(2))
+        }));
+        
+        setRevenueData(formattedData);
       }
-    };
+    } catch (err) {
+      console.error('Error fetching revenue data:', err);
+      setError('Failed to load revenue data. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
 
     fetchData();
   }, [dateRange]);
@@ -118,7 +119,7 @@ function DashboardCard04() {
         <h2 className="font-semibold text-gray-800 dark:text-gray-100">
           Revenue Trend Chart
         </h2>
-        <DatePicker />
+        <SubDatePicker onDateChange={fetchData} />
       </div>
     </header>
       

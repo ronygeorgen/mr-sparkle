@@ -5,6 +5,7 @@ import { useFiscalPeriod } from '../../contexts/FiscalPeriodContext';
 import CardDetailModal from '../../components/CardDetailModal';
 import OpportunityTable from '../../components/OpportunityTable';
 import { opportunityAPI } from '../../features/opportunity/opportunityAPI';
+import SubDatePicker from '../../components/SubDatePicker';
 
 function DashboardCard06() {
   const [loading, setLoading] = useState(true);
@@ -117,34 +118,40 @@ function DashboardCard06() {
     fetchOpportunities(page, selectedSource);
   };
 
+  const fetchDashboardData = async (SubDateRange = null) => {
+    try {
+      setLoading(true);
+      const effectiveRange  = SubDateRange || dateRange;
+      const response = await axiosInstance.get('/data/dashboard/', {
+        params: {
+          start_date: effectiveRange.from.toISOString().split('T')[0],
+          end_date: effectiveRange.to.toISOString().split('T')[0],
+        }
+      });
+      
+      const processedData = processLeadSourceData(response.data);
+      setLeadSourceData(processedData);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        const response = await axiosInstance.get('/data/dashboard/', {
-          params: {
-            start_date: dateRange.from.toISOString().split('T')[0],
-            end_date: dateRange.to.toISOString().split('T')[0],
-          }
-        });
-        
-        const processedData = processLeadSourceData(response.data);
-        setLeadSourceData(processedData);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
     fetchDashboardData();
   }, [dateRange]);
 
   return (
     <div className="flex flex-col col-span-full sm:col-span-6 xl:col-span-5 bg-white dark:bg-slate-800 shadow-lg rounded-sm border border-slate-200 dark:border-slate-700">
-      <header className="px-5 py-4 border-b border-slate-100 dark:border-slate-700">
-        <h2 className="font-semibold text-slate-800 dark:text-slate-100">Lead Source Breakdown</h2>
-      </header>
+    <header className="px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="font-semibold text-slate-800 dark:text-slate-100">
+          Lead Source Breakdown
+        </h2>
+        <SubDatePicker  onDateChange={fetchDashboardData}/>
+      </div>
+    </header>
       {loading ? (
         <div className="px-5 py-3 flex items-center justify-center h-96">
           <p>Loading chart data...</p>

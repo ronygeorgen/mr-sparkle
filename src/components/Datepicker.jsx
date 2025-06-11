@@ -9,13 +9,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "./ui/popover"
-import { useFiscalPeriod } from "../contexts/FiscalPeriodContext"
+import { useFiscalPeriod, PERIOD_TYPES } from "../contexts/FiscalPeriodContext"
 
 export default function DatePicker({ className }) {
   const {
     selectedPeriodIndex,
     dateRange,
-    fiscalPeriods,
+    periodOptions,
     changePeriod,
   } = useFiscalPeriod()
 
@@ -37,7 +37,7 @@ export default function DatePicker({ className }) {
   const selectFiscalPeriod = (index) => {
     changePeriod(index)
     setDropdownOpen(false)
-    if (index > 0) setIsOpen(false)
+    if (index !== PERIOD_TYPES.CUSTOM_RANGE) setIsOpen(false)
   }
 
   const formatDateRange = () => {
@@ -49,18 +49,8 @@ export default function DatePicker({ className }) {
   }
 
   const handleCalendarSelect = (newDate) => {
-    changePeriod(0, newDate)
+    changePeriod(PERIOD_TYPES.CUSTOM_RANGE, newDate)
   }
-
-  const labels = [
-    "Custom Range",
-    "Revenue YTD",
-    "Revenue MTD",
-    "Revenue QTD",
-    "Cash Collected",
-    "Projected Revenue (Next 2 Weeks)",
-    "Pipeline Value (Open Deals)"
-  ]
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
@@ -75,7 +65,7 @@ export default function DatePicker({ className }) {
               <path d="M5 4a1 1 0 0 0 0 2h6a1 1 0 1 0 0-2H5Z" />
               <path d="M4 0a4 4 0 0 0-4 4v8a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4V4a4 4 0 0 0-4-4H4ZM2 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4Z" />
             </svg>
-            <span>{labels[selectedPeriodIndex]}</span>
+            <span>{periodOptions[selectedPeriodIndex]}</span>
           </div>
           <svg className="shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500" width="11" height="7" viewBox="0 0 11 7">
             <path d="M5.4 6.8L0 1.4 1.4 0l4 4 4-4 1.4 1.4z" />
@@ -85,7 +75,7 @@ export default function DatePicker({ className }) {
         {dropdownOpen && (
           <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/60 rounded-lg shadow-lg py-1.5">
             <div className="font-medium text-sm text-gray-600 dark:text-gray-300">
-              {labels.map((label, index) => (
+              {periodOptions.map((label, index) => (
                 <button
                   key={index}
                   className={`flex items-center w-full hover:bg-gray-50 dark:hover:bg-gray-700/20 py-1 px-3 cursor-pointer ${
