@@ -20,15 +20,6 @@ const stacatrucColors = {
   purple: '#8E44AD',
 };
 
-// Fixed color mapping for lead sources
-const leadSourceColorMap = {
-  'Google Ads': stacatrucColors.green,
-  'GBP Organic': stacatrucColors.blue,
-  'Facebook Groups': stacatrucColors.clarkGreen,
-  'Referrals': stacatrucColors.orange,
-  'Door Knocking': stacatrucColors.purple,
-};
-
 // Custom tooltip colors that match the Stacatruc theme
 const stacatrucTooltipColors = {
   titleColor: {
@@ -53,7 +44,9 @@ function PieChart({
   data,
   width,
   height,
-  onSegmentClick
+  onSegmentClick,
+  categories,
+  colorMap
 }) {
   const [chart, setChart] = useState(null);
   const canvas = useRef(null);
@@ -68,11 +61,11 @@ function PieChart({
       ...sourceData,
       datasets: sourceData.datasets.map(dataset => ({
         ...dataset,
-        backgroundColor: sourceData.labels.map((label) => leadSourceColorMap[label] || stacatrucColors.medGrey),
-        hoverBackgroundColor: sourceData.labels.map((label) => leadSourceColorMap[label] || stacatrucColors.medGrey),
+        backgroundColor: sourceData.labels.map((label) => colorMap[label] || stacatrucColors.medGrey),
+        hoverBackgroundColor: sourceData.labels.map((label) => colorMap[label] || stacatrucColors.medGrey),
         borderWidth: 0,
-        hoverOffset: 12, // Makes the segment pop out on hover
-        hoverBorderColor: '#fff', // White border on hover for contrast
+        hoverOffset: 12,
+        hoverBorderColor: '#fff',
         hoverBorderWidth: 2,
       }))
     };
@@ -195,8 +188,8 @@ function PieChart({
     chart.data.labels = data.labels;
     chart.data.datasets.forEach((dataset, i) => {
       dataset.data = data.datasets[i].data;
-      dataset.backgroundColor = data.labels.map(label => leadSourceColorMap[label] || stacatrucColors.medGrey);
-      dataset.hoverBackgroundColor = data.labels.map(label => leadSourceColorMap[label] || stacatrucColors.medGrey);
+      dataset.backgroundColor = data.labels.map(label => colorMap[label] || stacatrucColors.medGrey);
+      dataset.hoverBackgroundColor = data.labels.map(label => colorMap[label] || stacatrucColors.medGrey);
       dataset.tooltipData = data.datasets[i].tooltipData;
     });
 
@@ -207,6 +200,46 @@ function PieChart({
     <div className="grow flex flex-col justify-center">
       <div className="h-80">
         <canvas ref={canvas} width={width} height={height}></canvas>
+      </div>
+      <div className="px-4 py-3">
+        <div className="grid grid-cols-1 gap-2">
+          {data?.labels.map((label, index) => {
+            const value = data.datasets[0].data[index];
+            const count = data.datasets[0].tooltipData[index].count;
+            const formatCurrency = (amount) => {
+              return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              }).format(amount);
+            };
+            
+            return (
+              <div key={label} className="flex items-center gap-4 text-sm">
+                <div className="flex items-center gap-2 w-32">
+                  <div 
+                    className="w-3 h-3 rounded-full" 
+                    style={{ backgroundColor: colorMap[label] }}
+                  />
+                  <span className={darkMode ? "text-slate-100" : "text-slate-800"}>
+                    {label}
+                  </span>
+                </div>
+                <div className="w-16 text-right">
+                  <span className={darkMode ? "text-slate-300" : "text-slate-600"}>
+                    {count}
+                  </span>
+                </div>
+                <div className="w-32 text-right">
+                  <span className={darkMode ? "text-slate-300" : "text-slate-600"}>
+                    {formatCurrency(value)}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

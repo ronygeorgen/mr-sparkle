@@ -28,6 +28,15 @@ function DashboardCard06() {
     'Door Knocking'
   ];
 
+  // Define color mapping for lead sources
+  const leadSourceColorMap = {
+    'Google Ads': '#36A501',
+    'GBP Organic': '#3985AE',
+    'Facebook Groups': '#BCD230',
+    'Referrals': '#F7A928',
+    'Door Knocking': '#8E44AD'
+  };
+
   // Function to process API data and create chart data
   const processLeadSourceData = (apiData) => {
     if (!apiData || !apiData.lead_source_breakdown) return null;
@@ -163,6 +172,8 @@ function DashboardCard06() {
             width={389} 
             height={320}
             onSegmentClick={handlePieClick}
+            categories={categoriesToShow}
+            colorMap={leadSourceColorMap}
           />
         )
       )}
