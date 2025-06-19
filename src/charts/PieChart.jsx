@@ -197,11 +197,11 @@ function PieChart({
   }, [data, chart, darkMode]);
 
   return (
-    <div className="grow flex flex-col justify-center">
-      <div className="h-80">
+    <div className="grow flex flex-col md:flex-row justify-center items-center md:h-80 w-full">
+      <div className="w-full md:flex-shrink-0 md:w-[320px] md:h-[320px] flex items-center justify-center">
         <canvas ref={canvas} width={width} height={height}></canvas>
       </div>
-      <div className="px-4 py-3">
+      <div className="px-4 py-3 flex-1 w-full">
         <div className="grid grid-cols-1 gap-2">
           {data?.labels.map((label, index) => {
             const value = data.datasets[0].data[index];
@@ -214,7 +214,6 @@ function PieChart({
                 maximumFractionDigits: 2
               }).format(amount);
             };
-            
             return (
               <div key={label} className="flex items-center gap-4 text-sm">
                 <div className="flex items-center gap-2 w-32">

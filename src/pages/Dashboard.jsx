@@ -26,6 +26,15 @@ function Dashboard() {
       conversion_rate: 0,
       average_job_value: 0,
       total_sales: 0
+    },
+    financial_metrics: {
+      revenue_ytd: 0,
+      revenue_mtd: 0,
+      revenue_qtd: 0,
+      cash_collected: 0,
+      projected_revenue_week1: 0,
+      projected_revenue_week2: 0,
+      pipeline_value: 0
     }
   });
   const [loading, setLoading] = useState(true);
@@ -121,8 +130,13 @@ function Dashboard() {
             end_date: dateRange.to.toISOString().split('T')[0],
           }
         });
+        console.log(response.data)
+        setDashboardData(prev => ({
+          ...prev,
+          ...response.data,
+        }));
         
-        setDashboardData(response.data);
+        // setDashboardData(response.data);
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
         setError('Failed to load dashboard data. Please try again later.');
@@ -165,6 +179,70 @@ function Dashboard() {
                 <Datepicker align="right" />  
               </div>
 
+            </div>
+
+            {/* Financial Metrics Section - now at the top */}
+            <div className="w-full mb-8 grid grid-cols-1 sm:grid-cols-2 grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="sm:col-span-1">
+                <KpiCard 
+                  title="Revenue YTD" 
+                  value={dashboardData.financial_metrics?.revenue_ytd.toFixed(2)} 
+                  unit="$" 
+                  subtitle="Year to Date"
+                  className="text-4xl font-extrabold py-8"
+                  onClick={() => handleKpiClick('revenue_ytd')}
+                />
+              </div>
+              <div className="sm:col-span-1">
+                <KpiCard 
+                  title="Revenue MTD" 
+                  value={dashboardData.financial_metrics?.revenue_mtd.toFixed(2)} 
+                  unit="$" 
+                  subtitle="Month to Date"
+                  className="text-4xl font-extrabold py-8"
+                  onClick={() => handleKpiClick('revenue_mtd')}
+                />
+              </div>
+              <div className="sm:col-span-1">
+                <KpiCard 
+                  title="Revenue QTD" 
+                  value={dashboardData.financial_metrics?.revenue_qtd.toFixed(2)} 
+                  unit="$" 
+                  subtitle="Quarter to Date"
+                  className="text-4xl font-extrabold py-8"
+                  onClick={() => handleKpiClick('revenue_qtd')}
+                />
+              </div>
+              <div className="sm:col-span-1">
+                <KpiCard 
+                  title="Cash Collected" 
+                  value={dashboardData.financial_metrics?.cash_collected.toFixed(2)} 
+                  unit="$" 
+                  subtitle="Selected Period"
+                  className="text-4xl font-extrabold py-8"
+                  onClick={() => handleKpiClick('cash_collected')}
+                />
+              </div>
+              <div className="sm:col-span-1">
+                <KpiCard 
+                  title="Projected Revenue (Week 2)" 
+                  value={dashboardData.financial_metrics?.projected_revenue_week2.toFixed(2)} 
+                  unit="$" 
+                  subtitle="Week After Next"
+                  className="text-4xl font-extrabold py-8"
+                  onClick={() => handleKpiClick('projected_week2')}
+                />
+              </div>
+              <div className="sm:col-span-1">
+                <KpiCard 
+                  title="Pipeline Value" 
+                  value={dashboardData.financial_metrics?.pipeline_value.toFixed(2)} 
+                  unit="$" 
+                  subtitle="Open Deals"
+                  className="text-4xl font-extrabold py-8"
+                  onClick={() => handleKpiClick('pipeline')}
+                />
+              </div>
             </div>
 
             {/* Loading state */}
@@ -238,7 +316,7 @@ function Dashboard() {
                 </div>
 
                 {/* Pie chart */}
-                <div className="md:col-span-6 lg:col-span-4">
+                <div className="md:col-span-12 lg:col-span-8">
                   <DashboardCard06 />
                 </div>
                 <div className="md:col-span-12 lg:col-span-4">
