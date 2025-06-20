@@ -1,5 +1,5 @@
 // Dashboard.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import Header from '../partials/Header';
 import Datepicker from '../components/Datepicker';
@@ -14,6 +14,7 @@ import { useFiscalPeriod } from '../contexts/FiscalPeriodContext';
 import CardDetailModal from '../components/CardDetailModal';
 import OpportunityTable from '../components/OpportunityTable';
 import { opportunityAPI } from '../features/opportunity/opportunityAPI';
+import SubDatePicker from '../components/SubDatePicker';
 
 function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -48,6 +49,9 @@ function Dashboard() {
   const [totalCount, setTotalCount] = useState(0);
   const [selectedMetric, setSelectedMetric] = useState('');
   const [modalLoading, setModalLoading] = useState(false);
+
+  // Add state for sales performance section date range
+  const [salesPerfDateRange, setSalesPerfDateRange] = useState(null);
 
   // Function to fetch opportunities based on metric
   const fetchOpportunities = async (page = 1, metric) => {
@@ -110,15 +114,16 @@ function Dashboard() {
     }
   };
 
-  const handleKpiClick = (metric) => {
+  // Memoized handlers
+  const handleKpiClick = useCallback((metric) => {
     setSelectedMetric(metric);
     setIsModalOpen(true);
     fetchOpportunities(1, metric);
-  };
+  }, [fetchOpportunities]);
 
-  const handlePageChange = (page) => {
+  const handlePageChange = useCallback((page) => {
     fetchOpportunities(page, selectedMetric);
-  };
+  }, [fetchOpportunities, selectedMetric]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -157,7 +162,7 @@ function Dashboard() {
       {/* <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} /> */}
 
       {/* Content area */}
-      <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+      <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden scroll-smooth">
 
         {/*  Site header */}
         <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
@@ -263,63 +268,74 @@ function Dashboard() {
             {!loading && !error && (
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                 {/* Bar chart (Revenue) */}
-                <div className="md:col-span-12 lg:col-span-8">
+                <div className="col-span-full">
                   <DashboardCard04 />
                 </div>
 
-                {/* Sales performance metrics */}
-                <div className="md:col-span-12 lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 justify-between">
-                  <div className="sm:col-span-1 lg:col-span-3">
-                    <KpiCard 
-                      title="Quotes Sent" 
-                      value={sales_performance?.quotes_sent} 
-                      unit="" 
-                      subtitle="This Period"
-                      onClick={() => handleKpiClick('quotes')}
-                    />
-                  </div>
-                  <div className="sm:col-span-1 lg:col-span-3">
-                    <KpiCard 
-                      title="Jobs Booked" 
-                      value={sales_performance?.jobs_booked} 
-                      unit="" 
-                      subtitle="Confirmed"
-                      onClick={() => handleKpiClick('jobs')}
-                    />
-                  </div>
-                  <div className="sm:col-span-1 lg:col-span-3">
-                    <ConversionRateGauge 
-                      percentage={parseFloat(sales_performance?.conversion_rate.toFixed(1))} 
-                      onClick={() => handleKpiClick('value')}
-                    />
-                  </div>
-                  <div className="sm:col-span-1 lg:col-span-3">
-                    <KpiCard 
-                      title="Avg. Job Value" 
-                      value={sales_performance?.average_job_value.toFixed(2)} 
-                      unit="$" 
-                      subtitle="This Period"
-                      onClick={() => handleKpiClick('value')}
-                    />
+                {/* Sales Performance Section */}
+                <div className="col-span-full lg:col-span-6 flex flex-col bg-white dark:bg-gray-800 shadow-md rounded-xl">
+                  <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
+                    <div className="flex items-center justify-between gap-4">
+                      <h2 className="font-semibold text-gray-800 dark:text-gray-100">Sales Performance</h2>
+                      <SubDatePicker onDateChange={setSalesPerfDateRange} />
+                    </div>
+                  </header>
+                  <div className="px-5 pt-3 pb-2 flex-1 flex flex-col">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div>
+                        <KpiCard 
+                          title="Quotes Sent" 
+                          value={sales_performance?.quotes_sent} 
+                          unit="" 
+                          subtitle="This Period"
+                          onClick={() => handleKpiClick('quotes')}
+                        />
+                      </div>
+                      <div>
+                        <KpiCard 
+                          title="Jobs Booked" 
+                          value={sales_performance?.jobs_booked} 
+                          unit="" 
+                          subtitle="Confirmed"
+                          onClick={() => handleKpiClick('jobs')}
+                        />
+                      </div>
+                      <div>
+                        <ConversionRateGauge 
+                          percentage={parseFloat(sales_performance?.conversion_rate.toFixed(1))} 
+                          onClick={() => handleKpiClick('value')}
+                        />
+                      </div>
+                      <div>
+                        <KpiCard 
+                          title="Avg. Job Value" 
+                          value={sales_performance?.average_job_value.toFixed(2)} 
+                          unit="$" 
+                          subtitle="This Period"
+                          onClick={() => handleKpiClick('value')}
+                        />
+                      </div>
+                      <div>
+                        <KpiCard 
+                          title="Leads Generated" 
+                          value={sales_performance?.leads_generated} 
+                          unit="" 
+                          subtitle="This Period"
+                          onClick={() => handleKpiClick('leads')}
+                        />
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-400 mt-4">
+                      <span>Leads Generated, Quotes Sent: GHL</span> &nbsp;|&nbsp; <span>Jobs Booked: ServiceM8</span>
+                    </div>
                   </div>
                 </div>
                 
-                {/* Leads Generated Card */}
-                <div className="md:col-span-6 lg:col-span-4 cursor-pointer">
-                  <LeadsGeneratedSmallCard 
-                    title="Leads Generated" 
-                    value={sales_performance?.leads_generated} 
-                    unit="" 
-                    subtitle="This Period"
-                    onClick={() => handleKpiClick('leads')}
-                  />
-                </div>
-
                 {/* Pie chart */}
-                <div className="md:col-span-12 lg:col-span-8">
+                <div className="col-span-full lg:col-span-6">
                   <DashboardCard06 />
                 </div>
-                <div className="md:col-span-12 lg:col-span-4">
+                <div className="col-span-full lg:col-span-4">
                   <DashboardCard07 />
                 </div>
               </div>
@@ -329,19 +345,21 @@ function Dashboard() {
       </div>
 
       {/* Modal */}
-      <CardDetailModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)}
-        title={`${selectedMetric.charAt(0).toUpperCase() + selectedMetric.slice(1)} Opportunities - ${dateRange.from.toLocaleDateString()} to ${dateRange.to.toLocaleDateString()}`}
-      >
-        <OpportunityTable 
-          opportunities={modalOpportunities} 
-          currentPage={currentPage}
-          totalCount={totalCount}
-          onPageChange={handlePageChange}
-          loading={modalLoading}
-        />
-      </CardDetailModal>
+      {isModalOpen && (
+        <CardDetailModal 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)}
+          title={`${selectedMetric.charAt(0).toUpperCase() + selectedMetric.slice(1)} Opportunities - ${dateRange.from.toLocaleDateString()} to ${dateRange.to.toLocaleDateString()}`}
+        >
+          <OpportunityTable 
+            opportunities={modalOpportunities} 
+            currentPage={currentPage}
+            totalCount={totalCount}
+            onPageChange={handlePageChange}
+            loading={modalLoading}
+          />
+        </CardDetailModal>
+      )}
     </div>
   );
 }

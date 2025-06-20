@@ -166,16 +166,27 @@ function DashboardCard06() {
           <p>Loading chart data...</p>
         </div>
       ) : (
-        leadSourceData && (
-          <PieChart 
-            data={leadSourceData} 
-            width={389} 
-            height={320}
-            onSegmentClick={handlePieClick}
-            categories={categoriesToShow}
-            colorMap={leadSourceColorMap}
-          />
-        )
+        (() => {
+          const hasData = leadSourceData && leadSourceData.datasets && leadSourceData.datasets[0] && Array.isArray(leadSourceData.datasets[0].data) && leadSourceData.datasets[0].data.some(v => v > 0);
+          if (hasData) {
+            return (
+              <PieChart 
+                data={leadSourceData} 
+                width={389} 
+                height={320}
+                onSegmentClick={handlePieClick}
+                categories={categoriesToShow}
+                colorMap={leadSourceColorMap}
+              />
+            );
+          } else {
+            return (
+              <div className="flex items-center justify-center h-64 w-full">
+                <span className="text-gray-400 dark:text-gray-500 text-lg font-medium">No data to display</span>
+              </div>
+            );
+          }
+        })()
       )}
 
       {showModal && (
