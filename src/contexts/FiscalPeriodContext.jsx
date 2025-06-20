@@ -1,8 +1,5 @@
 import React, { createContext, useContext, useState } from "react"
 import {
-  startOfMonth,
-  startOfQuarter,
-  startOfYear,
   endOfToday,
   addDays,
   subDays,
@@ -12,22 +9,32 @@ const FiscalPeriodContext = createContext()
 
 export const useFiscalPeriod = () => useContext(FiscalPeriodContext)
 
+// Period type constants
+export const PERIOD_TYPES = {
+  CUSTOM_RANGE: 0,
+  LAST_7_DAYS: 1,
+  MONTH_TO_DATE: 2,
+  QUARTER_TO_DATE: 3,
+  YEAR_TO_DATE: 4,
+  NEXT_2_WEEKS: 5,
+  NEXT_60_DAYS: 6,
+}
+
 // Predefined period labels (reusable across dashboards)
 const periodOptions = [
-  "Custom Range",                  // 0
-  "Last 7 Days",                   // 1
-  "Last 30 Days",                  // 2
-  "Month to Date (MTD)",          // 3
-  "Quarter to Date (QTD)",        // 4
-  "Year to Date (YTD)",           // 5
-  "Next 2 Weeks",                 // 6
-  "Next 60 Days",                 // 7
+  "Custom Range",
+  "Last 7 Days",
+  "Month to Date (MTD)",
+  "Quarter to Date (QTD)",
+  "Year to Date (YTD)",
+  "Next 2 Weeks",
+  "Next 60 Days",
 ]
 
 export const FiscalPeriodProvider = ({ children }) => {
   const today = new Date()
 
-  const [selectedPeriodIndex, setSelectedPeriodIndex] = useState(1) // Default: Last 7 Days
+  const [selectedPeriodIndex, setSelectedPeriodIndex] = useState(PERIOD_TYPES.LAST_7_DAYS) // Default: Last 7 Days
   const [dateRange, setDateRange] = useState({
     from: subDays(today, 6), // Last 7 days includes today
     to: today,
@@ -36,28 +43,26 @@ export const FiscalPeriodProvider = ({ children }) => {
   const calculatePredefinedRange = (index) => {
     const now = new Date()
     switch (index) {
-      case 1: // Last 7 Days
+      case PERIOD_TYPES.LAST_7_DAYS:
         return { from: subDays(now, 6), to: endOfToday() }
-      case 2: // Last 30 Days
+      case PERIOD_TYPES.MONTH_TO_DATE:
         return { from: subDays(now, 29), to: endOfToday() }
-      case 3: // MTD
-        return { from: startOfMonth(now), to: endOfToday() }
-      case 4: // QTD
-        return { from: startOfQuarter(now), to: endOfToday() }
-      case 5: // YTD
-        return { from: startOfYear(now), to: endOfToday() }
-      case 6: // Next 2 Weeks
+      case PERIOD_TYPES.QUARTER_TO_DATE:
+        return { from: subDays(now, 89), to: endOfToday() }
+      case PERIOD_TYPES.YEAR_TO_DATE:
+        return { from: subDays(now, 364), to: endOfToday() }
+      case PERIOD_TYPES.NEXT_2_WEEKS:
         return { from: now, to: addDays(now, 13) }
-      case 7: // Next 60 Days
+      case PERIOD_TYPES.NEXT_60_DAYS:
         return { from: now, to: addDays(now, 59) }
-      default: // 0 - Custom Range
+      default: // PERIOD_TYPES.CUSTOM_RANGE
         return dateRange
     }
   }
 
   const changePeriod = (index, customDate = null) => {
     setSelectedPeriodIndex(index)
-    if (index === 0 && customDate) {
+    if (index === PERIOD_TYPES.CUSTOM_RANGE && customDate) {
       setDateRange(customDate)
     } else {
       setDateRange(calculatePredefinedRange(index))

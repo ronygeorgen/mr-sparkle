@@ -262,176 +262,113 @@ const getProbabilityBgColor = (probabilityStr) => {
         </div>
       </div>
 
-      {/* Tables container with a flexbox layout */}
-      <div className="flex max-h-[70vh]">
-        {/* Left fixed table */}
-        <div 
-          ref={fixedTableRef}
-          className="overflow-y-scroll scrollbar-none border-r border-gray-200 dark:border-gray-700"
-          style={{ width: '500px', flexShrink: 0 }}
-        >
-          <table className="w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
-            {/* Fixed table header */}
-            <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0 z-10">
+      {/* Responsive Table Container */}
+      <div className="w-full overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0 z-10">
+            <tr>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider min-w-[120px]">Company Name</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider min-w-[120px]">Customer Name</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider min-w-[140px]">Opportunity Name</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[180px] hidden sm:table-cell">Contact Details</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px] hidden md:table-cell">Pipeline</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px] hidden md:table-cell">Next Step</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px] hidden md:table-cell">Closing Probability</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px] hidden lg:table-cell">Stage</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px] hidden lg:table-cell">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[80px] hidden xl:table-cell">Age (days)</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px] hidden xl:table-cell">Expected Close Date</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px] hidden xl:table-cell">Envisage Date</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px] hidden 2xl:table-cell">Created Date</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px] hidden 2xl:table-cell">Updated Date</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px] hidden 2xl:table-cell">Amount</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            {loading ? (
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider w-[160px] whitespace-nowrap">
-                  Company Name
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider w-[160px] whitespace-nowrap">
-                  Customer Name
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider w-[180px] whitespace-nowrap">
-                  Opportunity Name
-                </th>
+                <td colSpan="15" className="px-4 py-5 text-center text-gray-500 dark:text-gray-400">
+                  Loading...
+                </td>
               </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {loading ? (
-                <tr>
-                  <td colSpan="3" className="px-4 py-5 text-center text-gray-500 dark:text-gray-400">
-                    Loading...
-                  </td>
-                </tr>
-              ) : opportunities.length === 0 ? (
-                <tr>
-                  <td colSpan="3" className="px-4 py-5 text-center text-gray-500 dark:text-gray-400">
-                    No opportunities found
-                  </td>
-                </tr>
-              ) : (
-                opportunities.map((opportunity, index) => {
-                  const rowBg = index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-900';
-                  
-                  return (
-                    <tr 
-                      key={`fixed-${opportunity.ghl_id}`} 
-                      className={rowBg}
-                      style={{ height: rowHeights[index] ? `${rowHeights[index]}px` : 'auto' }}
-                    >
-                      <td className={`px-4 py-3 text-sm text-gray-900 dark:text-gray-100 w-[160px]`}>
-                        {opportunity.assigned_to?.first_name || 'N/A'} {opportunity.assigned_to?.last_name || ''}
-                      </td>
-                      <td className={`px-4 py-3 text-sm text-gray-900 dark:text-gray-100 w-[160px]`}>
-                        {getFullName(opportunity.contact)}
-                      </td>
-                      <td className={`px-4 py-3 text-sm text-gray-900 dark:text-gray-100 w-[180px]`}>
-                        {opportunity.name || 'N/A'}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-        
-        {/* Right table */}
-        <div 
-          ref={scrollableTableRef}
-          className="overflow-y-auto flex-grow scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
-        >
-          <table className="w-full table-fixed divide-y divide-gray-200 dark:divide-gray-700">
-            {/* Right table header */}
-            <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0 z-10">
+            ) : opportunities.length === 0 ? (
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[250px] whitespace-nowrap">Contact Details</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[200px] whitespace-nowrap">Pipeline</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[200px] whitespace-nowrap">Next Step</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[200px] whitespace-nowrap">Closing Probability</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[120px] whitespace-nowrap">Stage</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[150px] whitespace-nowrap">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[100px] whitespace-nowrap">Age (days)</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[200px] whitespace-nowrap">Expected Close Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[200px] whitespace-nowrap">Envisage Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[120px] whitespace-nowrap">Created Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[120px] whitespace-nowrap">Updated Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[120px] whitespace-nowrap">Amount</th>
+                <td colSpan="15" className="px-4 py-5 text-center text-gray-500 dark:text-gray-400">
+                  No opportunities found
+                </td>
               </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {loading ? (
-                <tr>
-                  <td colSpan="8" className="px-4 py-5 text-center text-gray-500 dark:text-gray-400">
-                    Loading...
-                  </td>
-                </tr>
-              ) : opportunities.length === 0 ? (
-                <tr>
-                  <td colSpan="8" className="px-4 py-5 text-center text-gray-500 dark:text-gray-400">
-                    No opportunities found
-                  </td>
-                </tr>
-              ) : (
-                opportunities.map((opportunity, index) => {
-                  const rowBg = index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-900';
-                  const contactDetails = getContactDetails(opportunity.contact);
-                  
-                  return (
-                    <tr 
-                      key={`scrollable-${opportunity.ghl_id}`} 
-                      className={rowBg}
-                      style={{ height: rowHeights[index] ? `${rowHeights[index]}px` : 'auto' }}
-                    >
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 w-[180px]">
-                        <div>
-                          <div>{contactDetails.email}</div>
-                          <div>{contactDetails.phone}</div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 w-[100px]">
-                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-500/20 text-green-700 dark:text-green-300">
-                          {opportunity.pipeline?.name || 'N/A'}
+            ) : (
+              opportunities.map((opportunity, index) => {
+                const rowBg = index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-900';
+                const contactDetails = getContactDetails(opportunity.contact);
+                return (
+                  <tr key={opportunity.ghl_id} className={rowBg}>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[120px]">
+                      {opportunity.assigned_to?.first_name || 'N/A'} {opportunity.assigned_to?.last_name || ''}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[120px]">
+                      {getFullName(opportunity.contact)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[140px]">
+                      {opportunity.name || 'N/A'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[180px] hidden sm:table-cell">
+                      <div>
+                        <div>{contactDetails.email}</div>
+                        <div>{contactDetails.phone}</div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 min-w-[120px] hidden md:table-cell">
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-500/20 text-green-700 dark:text-green-300">
+                        {opportunity.pipeline?.name || 'N/A'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 min-w-[120px] hidden md:table-cell">
+                      <span className="px-2 py-1 text-xs font-medium rounded-full text-gray-900 dark:text-gray-100">
+                        {opportunity.next_step?.name || 'N/A'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 min-w-[120px] hidden md:table-cell">
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getProbabilityBgColor(opportunity.custom_fields?.chances_of_closing_the_deal)}`}>
+                        {formatProbability(opportunity.custom_fields?.chances_of_closing_the_deal) || 'N/A'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[100px] hidden lg:table-cell">
+                      {opportunity.stage.name || 'N/A'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[100px] hidden lg:table-cell">
+                      <div className="flex items-center">
+                        <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-medium px-2 py-1 rounded">
+                          {opportunity.status || 'N/A'}
                         </span>
-                      </td>
-                      <td className="px-4 py-3 w-[100px]">
-                        <span className="px-2 py-1 text-xs font-medium rounded-full  text-gray-900 dark:text-gray-100">
-                          {opportunity.next_step?.name || 'N/A'}
-                        </span>
-                      </td> 
-                      <td className="px-4 py-3 w-[100px]">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getProbabilityBgColor(opportunity.custom_fields?.chances_of_closing_the_deal)}`}>
-                          {formatProbability(opportunity.custom_fields?.chances_of_closing_the_deal) || 'N/A'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 w-[120px]">
-                        {opportunity.stage.name || 'N/A'}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 w-[150px]">
-                        <div className="flex items-center">
-                          <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-medium px-2 py-1 rounded">
-                            {opportunity.status || 'N/A'}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 w-[100px]">
-                        {calculateAge(opportunity.created_at)}
-                      </td>
-
-                      {/* new columns */}
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 w-[120px]">
-                        N/A
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 w-[120px]">
-                        N/A
-                      </td>
-
-                      
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 w-[120px]">
-                        {formatDate(opportunity.created_at)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 w-[120px]">
-                        {formatDate(opportunity.updated_at)}
-                      </td>
-                      <td className="px-4 py-3 text-sm font-medium text-green-600 dark:text-green-400 w-[120px]">
-                        {formatCurrency(opportunity.opp_value)}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[80px] hidden xl:table-cell">
+                      {calculateAge(opportunity.created_at)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[120px] hidden xl:table-cell">
+                      N/A
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[120px] hidden xl:table-cell">
+                      N/A
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[100px] hidden 2xl:table-cell">
+                      {formatDate(opportunity.created_at)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[100px] hidden 2xl:table-cell">
+                      {formatDate(opportunity.updated_at)}
+                    </td>
+                    <td className="px-4 py-3 text-sm font-medium text-green-600 dark:text-green-400 min-w-[100px] hidden 2xl:table-cell">
+                      {formatCurrency(opportunity.opp_value)}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+        {/* Mobile message */}
+        <div className="sm:hidden text-xs text-gray-500 mt-2 px-2">Swipe left/right to see more columns.</div>
       </div>
     </div>
   );

@@ -20,15 +20,6 @@ const stacatrucColors = {
   purple: '#8E44AD',
 };
 
-// Fixed color mapping for lead sources
-const leadSourceColorMap = {
-  'Google Ads': stacatrucColors.green,
-  'GBP Organic': stacatrucColors.blue,
-  'Facebook Groups': stacatrucColors.clarkGreen,
-  'Referrals': stacatrucColors.orange,
-  'Door Knocking': stacatrucColors.purple,
-};
-
 // Custom tooltip colors that match the Stacatruc theme
 const stacatrucTooltipColors = {
   titleColor: {
@@ -52,7 +43,10 @@ const stacatrucTooltipColors = {
 function PieChart({
   data,
   width,
-  height
+  height,
+  onSegmentClick,
+  categories,
+  colorMap
 }) {
   const [chart, setChart] = useState(null);
   const canvas = useRef(null);
@@ -67,18 +61,22 @@ function PieChart({
       ...sourceData,
       datasets: sourceData.datasets.map(dataset => ({
         ...dataset,
-        backgroundColor: sourceData.labels.map((label) => leadSourceColorMap[label] || stacatrucColors.medGrey),
-        hoverBackgroundColor: sourceData.labels.map((label) => leadSourceColorMap[label] || stacatrucColors.medGrey),
+        backgroundColor: sourceData.labels.map((label) => colorMap[label] || stacatrucColors.medGrey),
+        hoverBackgroundColor: sourceData.labels.map((label) => colorMap[label] || stacatrucColors.medGrey),
         borderWidth: 0,
+        hoverOffset: 12,
+        hoverBorderColor: '#fff',
+        hoverBorderWidth: 2,
       }))
     };
   };
 
   useEffect(() => {
     const ctx = canvas.current;
+    if (!ctx) return;
     // Create chart with Stacatruc colors
     const chartData = prepareChartData(data);
-    
+
     const newChart = new Chart(ctx, {
       type: 'pie',
       data: chartData,
@@ -106,7 +104,6 @@ function PieChart({
                   return data.labels.map(function(label, i) {
                     const meta = chart.getDatasetMeta(0);
                     const style = meta.controller.getStyle(i);
-                    
                     return {
                       text: label,
                       fillStyle: style.backgroundColor,
@@ -160,33 +157,88 @@ function PieChart({
         },
         maintainAspectRatio: false,
         resizeDelay: 200,
+        onClick: (event, elements) => {
+          if (elements && elements.length > 0) {
+            const index = elements[0].index;
+            const label = data.labels[index];
+            if (onSegmentClick) {
+              onSegmentClick(label);
+            }
+          }
+        }
       },
     });
     setChart(newChart);
-    return () => newChart.destroy();
+    return () => {
+      if (newChart) {
+        newChart.destroy();
+      }
+      setChart(null);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update chart when data changes
   useEffect(() => {
     if (!chart || !data) return;
-    
+    // Prevent update if chart is destroyed
+    if (chart._destroyed) return;
+
     // Update data values if they changed
     chart.data.labels = data.labels;
     chart.data.datasets.forEach((dataset, i) => {
       dataset.data = data.datasets[i].data;
-      dataset.backgroundColor = data.labels.map(label => leadSourceColorMap[label] || stacatrucColors.medGrey);
-      dataset.hoverBackgroundColor = data.labels.map(label => leadSourceColorMap[label] || stacatrucColors.medGrey);
+      dataset.backgroundColor = data.labels.map(label => colorMap[label] || stacatrucColors.medGrey);
+      dataset.hoverBackgroundColor = data.labels.map(label => colorMap[label] || stacatrucColors.medGrey);
       dataset.tooltipData = data.datasets[i].tooltipData;
     });
-    
+
     chart.update();
   }, [data, chart, darkMode]);
 
   return (
-    <div className="grow flex flex-col justify-center">
-      <div className="h-80">
+    <div className="grow flex flex-col md:flex-row justify-center items-center md:h-80 w-full">
+      <div className="w-full md:flex-shrink-0 md:w-[320px] md:h-[320px] flex items-center justify-center">
         <canvas ref={canvas} width={width} height={height}></canvas>
+      </div>
+      <div className="px-4 py-3 flex-1 w-full">
+        <div className="grid grid-cols-1 gap-2">
+          {data?.labels.map((label, index) => {
+            const value = data.datasets[0].data[index];
+            const count = data.datasets[0].tooltipData[index].count;
+            const formatCurrency = (amount) => {
+              return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              }).format(amount);
+            };
+            return (
+              <div key={label} className="flex items-center gap-4 text-sm">
+                <div className="flex items-center gap-2 w-32">
+                  <div 
+                    className="w-3 h-3 rounded-full" 
+                    style={{ backgroundColor: colorMap[label] }}
+                  />
+                  <span className={darkMode ? "text-slate-100" : "text-slate-800"}>
+                    {label}
+                  </span>
+                </div>
+                <div className="w-16 text-right">
+                  <span className={darkMode ? "text-slate-300" : "text-slate-600"}>
+                    {count}
+                  </span>
+                </div>
+                <div className="w-32 text-right">
+                  <span className={darkMode ? "text-slate-300" : "text-slate-600"}>
+                    {formatCurrency(value)}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
