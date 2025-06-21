@@ -178,12 +178,6 @@ function Dashboard() {
                 <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Dashboard</h1>
               </div>
 
-              {/* Right: Actions */}
-              <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-                {/* Datepicker built with React Day Picker */}
-                <Datepicker align="right" />  
-              </div>
-
             </div>
 
             {/* Financial Metrics Section - now at the top */}
@@ -273,7 +267,7 @@ function Dashboard() {
                 </div>
 
                 {/* Sales Performance Section */}
-                <div className="col-span-full lg:col-span-6 flex flex-col bg-white dark:bg-gray-800 shadow-md rounded-xl">
+                <div className="col-span-full lg:col-span-6 flex flex-col bg-white dark:bg-gray-800 shadow-md rounded-xl h-full">
                   <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
                     <div className="flex items-center justify-between gap-4">
                       <h2 className="font-semibold text-gray-800 dark:text-gray-100">Sales Performance</h2>
@@ -332,7 +326,7 @@ function Dashboard() {
                 </div>
                 
                 {/* Pie chart */}
-                <div className="col-span-full lg:col-span-6">
+                <div className="col-span-full lg:col-span-6 h-full">
                   <DashboardCard06 />
                 </div>
                 <div className="col-span-full lg:col-span-4">

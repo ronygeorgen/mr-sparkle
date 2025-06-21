@@ -197,12 +197,12 @@ function PieChart({
   }, [data, chart, darkMode]);
 
   return (
-    <div className="grow flex flex-col md:flex-row justify-center items-center md:h-80 w-full">
+    <div className="grow flex flex-col md:flex-row lg:flex-col xl:flex-row justify-center items-center md:h-80 w-full">
       <div className="w-full md:flex-shrink-0 md:w-[320px] md:h-[320px] flex items-center justify-center">
         <canvas ref={canvas} width={width} height={height}></canvas>
       </div>
       <div className="px-4 py-3 flex-1 w-full">
-        <div className="grid grid-cols-1 gap-2">
+        <div className="grid grid-cols-1 gap-2 items-center justify-items-center">
           {data?.labels.map((label, index) => {
             const value = data.datasets[0].data[index];
             const count = data.datasets[0].tooltipData[index].count;
