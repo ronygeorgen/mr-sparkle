@@ -202,7 +202,7 @@ function PieChart({
         <canvas ref={canvas} width={width} height={height}></canvas>
       </div>
       <div className="px-4 py-3 flex-1 w-full">
-        <div className="grid grid-cols-1 gap-2 items-center justify-items-center">
+        <div className="grid grid-cols-1 gap-2 items-center justify-items-center overflow-x-auto">
           {data?.labels.map((label, index) => {
             const value = data.datasets[0].data[index];
             const count = data.datasets[0].tooltipData[index].count;

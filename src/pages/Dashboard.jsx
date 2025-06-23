@@ -129,16 +129,25 @@ function Dashboard() {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get('/data/dashboard/', {
-          params: {
-            start_date: dateRange.from.toISOString().split('T')[0],
-            end_date: dateRange.to.toISOString().split('T')[0],
-          }
-        });
-        console.log(response.data)
+        // Fetch both dashboard and revenue metrics in parallel
+        const [dashboardRes, revenueMetricsRes] = await Promise.all([
+          axiosInstance.get('/data/dashboard/', {
+            params: {
+              start_date: dateRange.from.toISOString().split('T')[0],
+              end_date: dateRange.to.toISOString().split('T')[0],
+            }
+          }),
+          axiosInstance.get('/data/revenue-metrics/')
+        ]);
+        // Merge revenue metrics into financial_metrics
         setDashboardData(prev => ({
           ...prev,
-          ...response.data,
+          ...dashboardRes.data,
+          financial_metrics: {
+            ...prev.financial_metrics,
+            ...(dashboardRes.data.financial_metrics || {}),
+            ...(revenueMetricsRes.data || {})
+          }
         }));
         
         // setDashboardData(response.data);
