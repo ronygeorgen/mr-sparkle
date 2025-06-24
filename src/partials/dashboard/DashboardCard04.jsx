@@ -136,7 +136,7 @@ function DashboardCard04() {
         <CardDetailModal 
           isOpen={isModalOpen} 
           onClose={() => setIsModalOpen(false)}
-          title={`Opportunities - ${periodLabel}`}
+          title={`Opportunities - ${new Date(values.start_date).toLocaleDateString()} to ${new Date(values.end_date).toLocaleDateString()}`}
         >
           <OpportunityTable 
             opportunities={modalOpportunities} 
