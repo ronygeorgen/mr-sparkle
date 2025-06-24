@@ -18,7 +18,8 @@ function DashboardCard04() {
   const [modalOpportunities, setModalOpportunities] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const [values, setValues] = useState({created_at_min:'', created_at_max:'', valueState:''});
+  const [values, setValues] = useState({start_date: '', end_date: ''});
+  const [pageSize] = useState(10);
   
   const fetchData = async (SubDateRange = null) => {
     try {
@@ -52,53 +53,37 @@ function DashboardCard04() {
     fetchData();
   }, [dateRange]);
 
-  const fetchOpenOpportunities = React.useCallback(async (page = 1, created_at_min, created_at_max, valueState) => {
+  const fetchOpenOpportunities = React.useCallback(async (page = 1, start_date, end_date) => {
     try {
-      const params = {
-        searchQuery: "",
-        page: page,
-        state: valueState
-      };
-      
-      if (created_at_min && created_at_max) {
-        params.created_at_min = created_at_min;
-        params.created_at_max = created_at_max;
-      }
-      
+      const searchQuery = "";
       const data = await opportunityAPI.getOpportunities(
-        params.searchQuery,
-        params.page,
-        params.pageSize,
-        params.fiscal_period,
-        params.created_at_min,
-        params.created_at_max,
-        params.state,
-        params.pipeline,
-        params.stage_name,
-        params.assigned_to,
-        params.contact,
-        params.opportunity_source,
+        searchQuery,
+        page,
+        pageSize,
+        start_date,
+        end_date
       );
-      
       setModalOpportunities(data.results || []);
       setTotalCount(data.count || 0);
       setCurrentPage(page);
     } catch (error) {
       console.error('Error fetching open opportunities:', error);
     }
-  }, []);
+  }, [pageSize]);
 
-  const handleBarClick = ({ datasetIndex, index, payload }) => {
+  const handleBarClick = ({ payload }) => {
     const { created_at_min, created_at_max } = payload;
-    const valueState = datasetIndex === 0 ? 'open' : 'close';
+    // Convert to start_date and end_date
+    const start_date = created_at_min;
+    const end_date = created_at_max;
     setIsModalOpen(true);
-    setValues({created_at_min, created_at_max, valueState});
-    fetchOpenOpportunities(1, created_at_min, created_at_max, valueState);
+    setValues({ start_date, end_date });
+    fetchOpenOpportunities(1, start_date, end_date);
     setShowModal(true);
   };
 
   const handlePageChange = (page) => {
-    fetchOpenOpportunities(page, values.created_at_min, values.created_at_max, values.valueState);
+    fetchOpenOpportunities(page, values.start_date, values.end_date);
   };
 
   const formatCurrency = (value) => {
@@ -151,7 +136,7 @@ function DashboardCard04() {
         <CardDetailModal 
           isOpen={isModalOpen} 
           onClose={() => setIsModalOpen(false)}
-          title={`${values.valueState === 'open' ? 'Open' : 'Closed'} Opportunities - ${periodLabel}`}
+          title={`Opportunities - ${periodLabel}`}
         >
           <OpportunityTable 
             opportunities={modalOpportunities} 

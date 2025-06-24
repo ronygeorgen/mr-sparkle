@@ -87,34 +87,23 @@ function DashboardCard06() {
 
   const fetchOpportunities = React.useCallback(async (page = 1, source) => {
     try {
-      const params = {
-        searchQuery: "",
-        page: page,
-        opportunity_source: source
-      };
+      const effectiveRange = dateRange;
+      const response = await axiosInstance.get('/data/opportunities/', {
+        params: {
+          start_date: effectiveRange.from.toISOString().split('T')[0],
+          end_date: effectiveRange.to.toISOString().split('T')[0],
+          source: source,
+          page: page
+        }
+      });
       
-      const data = await opportunityAPI.getOpportunities(
-        params.searchQuery,
-        params.page,
-        params.pageSize,
-        params.fiscal_period,
-        params.created_at_min,
-        params.created_at_max,
-        params.state,
-        params.pipeline,
-        params.stage_name,
-        params.assigned_to,
-        params.contact,
-        params.opportunity_source,
-      );
-      
-      setModalOpportunities(data.results || []);
-      setTotalCount(data.count || 0);
+      setModalOpportunities(response.data.results || []);
+      setTotalCount(response.data.count || 0);
       setCurrentPage(page);
     } catch (error) {
       console.error('Error fetching opportunities:', error);
     }
-  }, []);
+  }, [dateRange]);
 
   const handlePieClick = (source) => {
     setSelectedSource(source);
