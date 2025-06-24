@@ -1,6 +1,6 @@
 // Dashboard.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { subDays, subYears, startOfYear, endOfYear } from 'date-fns';
+import { subDays, subYears, startOfYear, endOfYear, startOfMonth, startOfQuarter } from 'date-fns';
 
 import Header from '../partials/Header';
 import Datepicker from '../components/Datepicker';
@@ -62,6 +62,31 @@ function Dashboard() {
     });
   }, []);
 
+  useEffect(() => {
+    const fetchSalesPerformanceData = async () => {
+      if (!salesPerfDateRange || !salesPerfDateRange.from) return;
+
+      try {
+        const res = await axiosInstance.get('/data/dashboard/', {
+          params: {
+            start_date: salesPerfDateRange.from.toISOString().split('T')[0],
+            end_date: salesPerfDateRange.to.toISOString().split('T')[0],
+          },
+        });
+        if (res.data && res.data.sales_performance) {
+          setDashboardData(prev => ({
+            ...prev,
+            sales_performance: res.data.sales_performance,
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to fetch sales performance data:", error);
+      }
+    };
+
+    fetchSalesPerformanceData();
+  }, [salesPerfDateRange]);
+
   // Function to fetch opportunities based on metric
   const fetchOpportunities = async (page = 1, metric) => {
     try {
@@ -72,11 +97,11 @@ function Dashboard() {
 
       const today = new Date();
       if (metric === 'revenue_ytd') {
-        activeDateRange = { from: subYears(today, 1), to: today };
+        activeDateRange = { from: startOfYear(today), to: today };
       } else if (metric === 'revenue_mtd') {
-        activeDateRange = { from: subDays(today, 30), to: today };
+        activeDateRange = { from: startOfMonth(today), to: today };
       } else if (metric === 'revenue_qtd') {
-        activeDateRange = { from: subDays(today, 91), to: today };
+        activeDateRange = { from: startOfQuarter(today), to: today };
       }
 
       const params = {
@@ -157,13 +182,16 @@ function Dashboard() {
           }),
           axiosInstance.get('/data/revenue-metrics/')
         ]);
+        
+        const { sales_performance, ...restOfData } = dashboardRes.data;
+        
         // Merge revenue metrics into financial_metrics
         setDashboardData(prev => ({
           ...prev,
-          ...dashboardRes.data,
+          ...restOfData,
           financial_metrics: {
             ...prev.financial_metrics,
-            ...(dashboardRes.data.financial_metrics || {}),
+            ...(restOfData.financial_metrics || {}),
             ...(revenueMetricsRes.data || {})
           }
         }));
@@ -190,11 +218,11 @@ function Dashboard() {
     const today = new Date();
     switch (selectedMetric) {
       case 'revenue_ytd':
-        return { from: subYears(today, 1), to: today };
+        return { from: startOfYear(today), to: today };
       case 'revenue_mtd':
-        return { from: subDays(today, 30), to: today };
+        return { from: startOfMonth(today), to: today };
       case 'revenue_qtd':
-        return { from: subDays(today, 91), to: today };
+        return { from: startOfQuarter(today), to: today };
       default:
         return dateRange;
     }
@@ -265,7 +293,6 @@ function Dashboard() {
                   unit="$" 
                   subtitle="Selected Period"
                   className="text-4xl font-extrabold py-8"
-                  onClick={() => handleKpiClick('cash_collected')}
                 />
               </div>
               <div className="sm:col-span-1">
@@ -275,7 +302,6 @@ function Dashboard() {
                   unit="$" 
                   subtitle="Week After Next"
                   className="text-4xl font-extrabold py-8"
-                  onClick={() => handleKpiClick('projected_week2')}
                 />
               </div>
               <div className="sm:col-span-1">
@@ -285,7 +311,6 @@ function Dashboard() {
                   unit="$" 
                   subtitle="Open Deals"
                   className="text-4xl font-extrabold py-8"
-                  onClick={() => handleKpiClick('pipeline')}
                 />
               </div>
             </div>
@@ -343,7 +368,6 @@ function Dashboard() {
                       <div>
                         <ConversionRateGauge 
                           percentage={parseFloat(sales_performance?.conversion_rate.toFixed(1))} 
-                          onClick={() => handleKpiClick('value')}
                         />
                       </div>
                       <div>
@@ -352,7 +376,6 @@ function Dashboard() {
                           value={sales_performance?.average_job_value.toFixed(2)} 
                           unit="$" 
                           subtitle="This Period"
-                          onClick={() => handleKpiClick('value')}
                         />
                       </div>
                       <div>
@@ -361,7 +384,6 @@ function Dashboard() {
                           value={sales_performance?.leads_generated} 
                           unit="" 
                           subtitle="This Period"
-                          onClick={() => handleKpiClick('leads')}
                         />
                       </div>
                     </div>
