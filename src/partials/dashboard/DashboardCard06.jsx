@@ -11,6 +11,11 @@ function DashboardCard06() {
   const [loading, setLoading] = useState(true);
   const [leadSourceData, setLeadSourceData] = useState(null);
   const { dateRange, periodLabel } = useFiscalPeriod();
+  const [cardDateRange, setCardDateRange] = useState(dateRange);
+
+  useEffect(() => {
+    setCardDateRange(dateRange);
+  }, [dateRange]);
   
   const [showModal, setShowModal] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -87,7 +92,7 @@ function DashboardCard06() {
 
   const fetchOpportunities = React.useCallback(async (page = 1, source) => {
     try {
-      const effectiveRange = dateRange;
+      const effectiveRange = cardDateRange;
       const response = await axiosInstance.get('/data/opportunities/', {
         params: {
           start_date: effectiveRange.from.toISOString().split('T')[0],
@@ -103,7 +108,7 @@ function DashboardCard06() {
     } catch (error) {
       console.error('Error fetching opportunities:', error);
     }
-  }, [dateRange]);
+  }, [cardDateRange]);
 
   const handlePieClick = (source) => {
     setSelectedSource(source);
@@ -116,10 +121,14 @@ function DashboardCard06() {
     fetchOpportunities(page, selectedSource);
   };
 
-  const fetchDashboardData = async (SubDateRange = null) => {
+  const handleDateChange = (newDateRange) => {
+    setCardDateRange(newDateRange);
+  };
+
+  const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const effectiveRange  = SubDateRange || dateRange;
+      const effectiveRange = cardDateRange;
       const response = await axiosInstance.get('/data/dashboard/', {
         params: {
           start_date: effectiveRange.from.toISOString().split('T')[0],
@@ -136,9 +145,8 @@ function DashboardCard06() {
     }
   };
   useEffect(() => {
-
     fetchDashboardData();
-  }, [dateRange]);
+  }, [cardDateRange]);
 
   return (
     <div className="flex flex-col h-full col-span-full sm:col-span-6 xl:col-span-5 bg-white dark:bg-slate-800 shadow-lg rounded-sm border border-slate-200 dark:border-slate-700">
@@ -147,7 +155,7 @@ function DashboardCard06() {
         <h2 className="font-semibold text-slate-800 dark:text-slate-100">
           Lead Source Breakdown
         </h2>
-        <SubDatePicker  onDateChange={fetchDashboardData}/>
+        <SubDatePicker onDateChange={handleDateChange} />
       </div>
     </header>
       {loading ? (
@@ -188,7 +196,7 @@ function DashboardCard06() {
             setCurrentPage(1);
             setTotalCount(0);
           }}
-          title={`${selectedSource} Opportunities - ${periodLabel}`}
+          title={`${selectedSource} Opportunities - ${cardDateRange.from.toLocaleDateString()} to ${cardDateRange.to.toLocaleDateString()}`}
         >
           <OpportunityTable 
             opportunities={modalOpportunities} 
