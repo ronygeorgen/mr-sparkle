@@ -271,7 +271,7 @@ const getProbabilityBgColor = (probabilityStr) => {
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider min-w-[120px]">Customer Name</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider min-w-[140px]">Opportunity Name</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[180px] hidden sm:table-cell">Contact Details</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px] hidden md:table-cell">Pipeline</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[240px] hidden md:table-cell">Pipeline</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px] hidden md:table-cell">Next Step</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px] hidden md:table-cell">Closing Probability</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px] hidden lg:table-cell">Stage</th>
@@ -302,15 +302,15 @@ const getProbabilityBgColor = (probabilityStr) => {
                 const rowBg = index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-900';
                 const contactDetails = getContactDetails(opportunity.contact);
                 return (
-                  <tr key={opportunity.ghl_id} className={rowBg}>
+                  <tr key={opportunity.ghl_id || opportunity.id} className={rowBg}>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[120px]">
-                      {opportunity.assigned_to?.first_name || 'N/A'} {opportunity.assigned_to?.last_name || ''}
+                      {(opportunity.assigned_to?.first_name || opportunity.assigned?.first_name || 'N/A') + ' ' + (opportunity.assigned_to?.last_name || opportunity.assigned?.last_name || '')}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[120px]">
                       {getFullName(opportunity.contact)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[140px]">
-                      {opportunity.name || 'N/A'}
+                      {opportunity.name || opportunity.description || 'N/A'}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[180px] hidden sm:table-cell">
                       <div>
@@ -318,7 +318,7 @@ const getProbabilityBgColor = (probabilityStr) => {
                         <div>{contactDetails.phone}</div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 min-w-[120px] hidden md:table-cell">
+                    <td className="px-4 py-3 min-w-[180px] hidden md:table-cell">
                       <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-500/20 text-green-700 dark:text-green-300">
                         {opportunity.pipeline?.name || 'N/A'}
                       </span>
@@ -334,7 +334,7 @@ const getProbabilityBgColor = (probabilityStr) => {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[100px] hidden lg:table-cell">
-                      {opportunity.stage.name || 'N/A'}
+                      {opportunity.current_stage?.name || 'N/A'}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[100px] hidden lg:table-cell">
                       <div className="flex items-center">
@@ -344,7 +344,7 @@ const getProbabilityBgColor = (probabilityStr) => {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[80px] hidden xl:table-cell">
-                      {calculateAge(opportunity.created_at)}
+                      {calculateAge(opportunity.created_at || opportunity.created_timestamp)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[120px] hidden xl:table-cell">
                       N/A
@@ -353,13 +353,13 @@ const getProbabilityBgColor = (probabilityStr) => {
                       N/A
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[100px] hidden 2xl:table-cell">
-                      {formatDate(opportunity.created_at)}
+                      {formatDate(opportunity.created_at || opportunity.created_timestamp)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[100px] hidden 2xl:table-cell">
                       {formatDate(opportunity.updated_at)}
                     </td>
                     <td className="px-4 py-3 text-sm font-medium text-green-600 dark:text-green-400 min-w-[100px] hidden 2xl:table-cell">
-                      {formatCurrency(opportunity.opp_value)}
+                      {formatCurrency(opportunity.value)}
                     </td>
                   </tr>
                 );

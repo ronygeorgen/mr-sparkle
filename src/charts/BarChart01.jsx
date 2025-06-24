@@ -26,12 +26,26 @@ function BarChart01({ data, width, height, onBarClick }) {
   const handleBarClick = (data) => {
     if (onBarClick) {
       // Extract month and year from the name (format: "MMM YYYY")
-      const [month, year] = data.name.split(' ');
+      const [monthStr, yearStr] = data.name.split(' ');
+      if (!monthStr || !yearStr) return;
+      // Convert month abbreviation to month number
+      const monthMap = {
+        Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
+        Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12'
+      };
+      const month = monthMap[monthStr];
+      const year = yearStr;
+      if (!month || !year) return;
+      // Calculate first and last day of the month
+      const created_at_min = `${year}-${month}-01`;
+      // Get last day of month
+      const lastDay = new Date(year, parseInt(month), 0).getDate();
+      const created_at_max = `${year}-${month}-${lastDay.toString().padStart(2, '0')}`;
       onBarClick({
         datasetIndex: 0,
         payload: {
-          created_at_min: month,
-          created_at_max: year
+          created_at_min,
+          created_at_max
         }
       });
     }

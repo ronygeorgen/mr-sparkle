@@ -1,5 +1,6 @@
 // Dashboard.jsx
 import React, { useState, useEffect, useCallback } from 'react';
+import { subDays, subYears, startOfYear, endOfYear } from 'date-fns';
 
 import Header from '../partials/Header';
 import Datepicker from '../components/Datepicker';
@@ -53,37 +54,59 @@ function Dashboard() {
   // Add state for sales performance section date range
   const [salesPerfDateRange, setSalesPerfDateRange] = useState(null);
 
+  useEffect(() => {
+    const today = new Date();
+    setSalesPerfDateRange({
+      from: subDays(today, 7),
+      to: today
+    });
+  }, []);
+
   // Function to fetch opportunities based on metric
   const fetchOpportunities = async (page = 1, metric) => {
     try {
       setModalLoading(true);
+
+      const isSalesPerfMetric = ['quotes', 'jobs', 'value', 'leads'].includes(metric);
+      let activeDateRange = isSalesPerfMetric && salesPerfDateRange ? salesPerfDateRange : dateRange;
+
+      const today = new Date();
+      if (metric === 'revenue_ytd') {
+        activeDateRange = { from: subYears(today, 1), to: today };
+      } else if (metric === 'revenue_mtd') {
+        activeDateRange = { from: subDays(today, 30), to: today };
+      } else if (metric === 'revenue_qtd') {
+        activeDateRange = { from: subDays(today, 91), to: today };
+      }
+
       const params = {
         searchQuery: "",
         page: page,
-        pageSize: 10
+        pageSize: 10,
+        start_date: null,
+        end_date: null,
+        pipeline_name: null,
       };
 
       // Add date range if available
-      if (dateRange && dateRange.from) {
-        params.created_at_min = dateRange.from.toISOString().split('T')[0];
-        if (dateRange.to) {
-          params.created_at_max = dateRange.to.toISOString().split('T')[0];
+      if (activeDateRange && activeDateRange.from) {
+        params.start_date = activeDateRange.from.toISOString().split('T')[0];
+        if (activeDateRange.to) {
+          params.end_date = activeDateRange.to.toISOString().split('T')[0];
         }
       }
 
       // Add metric-specific filters
       switch (metric) {
         case 'quotes':
-          params.stage_name = ['Quote Sent'];
+          params.pipeline_name = ['Quote Sent'];
           break;
         case 'jobs':
-          params.stage_name = ['Job Booked'];
+        case 'value':
+          params.pipeline_name = ['Job Booked'];
           break;
         case 'leads':
-          params.stage_name = ['New Lead'];
-          break;
-        case 'value':
-          params.stage_name = ['Job Booked'];
+          params.pipeline_name = ['New Lead'];
           break;
         default:
           break;
@@ -93,17 +116,12 @@ function Dashboard() {
         params.searchQuery,
         params.page,
         params.pageSize,
-        params.fiscal_period,
-        params.created_at_min,
-        params.created_at_max,
-        params.state,
-        params.pipeline,
-        params.stage_name,
-        params.assigned_to,
-        params.contact,
-        params.opportunity_source,
+        params.start_date,
+        params.end_date,
+        null, // source
+        params.pipeline_name,
       );
-
+      
       setModalOpportunities(data.results || []);
       setTotalCount(data.count || 0);
       setCurrentPage(page);
@@ -129,16 +147,25 @@ function Dashboard() {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get('/data/dashboard/', {
-          params: {
-            start_date: dateRange.from.toISOString().split('T')[0],
-            end_date: dateRange.to.toISOString().split('T')[0],
-          }
-        });
-        console.log(response.data)
+        // Fetch both dashboard and revenue metrics in parallel
+        const [dashboardRes, revenueMetricsRes] = await Promise.all([
+          axiosInstance.get('/data/dashboard/', {
+            params: {
+              start_date: dateRange.from.toISOString().split('T')[0],
+              end_date: dateRange.to.toISOString().split('T')[0],
+            }
+          }),
+          axiosInstance.get('/data/revenue-metrics/')
+        ]);
+        // Merge revenue metrics into financial_metrics
         setDashboardData(prev => ({
           ...prev,
-          ...response.data,
+          ...dashboardRes.data,
+          financial_metrics: {
+            ...prev.financial_metrics,
+            ...(dashboardRes.data.financial_metrics || {}),
+            ...(revenueMetricsRes.data || {})
+          }
         }));
         
         // setDashboardData(response.data);
@@ -154,6 +181,25 @@ function Dashboard() {
   }, [dateRange]);
 
   const { sales_performance } = dashboardData;
+
+  const getActiveDateRange = () => {
+    const isSalesPerfMetric = ['quotes', 'jobs', 'value', 'leads'].includes(selectedMetric);
+    if (isSalesPerfMetric && salesPerfDateRange) {
+      return salesPerfDateRange;
+    }
+    const today = new Date();
+    switch (selectedMetric) {
+      case 'revenue_ytd':
+        return { from: subYears(today, 1), to: today };
+      case 'revenue_mtd':
+        return { from: subDays(today, 30), to: today };
+      case 'revenue_qtd':
+        return { from: subDays(today, 91), to: today };
+      default:
+        return dateRange;
+    }
+  };
+  const activeDateRange = getActiveDateRange();
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -339,11 +385,11 @@ function Dashboard() {
       </div>
 
       {/* Modal */}
-      {isModalOpen && (
+      {isModalOpen && activeDateRange?.from && (
         <CardDetailModal 
           isOpen={isModalOpen} 
           onClose={() => setIsModalOpen(false)}
-          title={`${selectedMetric.charAt(0).toUpperCase() + selectedMetric.slice(1)} Opportunities - ${dateRange.from.toLocaleDateString()} to ${dateRange.to.toLocaleDateString()}`}
+          title={`${selectedMetric.charAt(0).toUpperCase() + selectedMetric.slice(1)} Opportunities - ${activeDateRange.from.toLocaleDateString()} to ${activeDateRange.to.toLocaleDateString()}`}
         >
           <OpportunityTable 
             opportunities={modalOpportunities} 

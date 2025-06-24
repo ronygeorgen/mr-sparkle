@@ -5,15 +5,10 @@ export const opportunityAPI = {
     searchQuery = "", 
     page = 1, 
     pageSize = 10, 
-    fiscalPeriod = null,
-    created_at_min = null,
-    created_at_max = null,
-    state = null,
-    pipeline = null,
-    stage_name = null, 
-    assigned_to = null,
-    contact = null,
-    opportunity_source = null,
+    start_date = null,
+    end_date = null,
+    source = null,
+    pipeline_name = null
   ) {
     // Build query parameters
     const params = new URLSearchParams();
@@ -27,93 +22,40 @@ export const opportunityAPI = {
     params.append("page", page);
     params.append("page_size", pageSize);
     
-    // Add state filter if provided (open, closed, etc.)
-    if (state) {
-      params.append("state", state);
+    // Add date range if provided
+    if (start_date) {
+      params.append("start_date", start_date);
+    }
+    if (end_date) {
+      params.append("end_date", end_date);
     }
     
-    // Add fiscal period if provided (takes precedence over date range)
-    if (fiscalPeriod) {
-      params.append("fiscal_period", fiscalPeriod);
-    } 
-    // Otherwise use date range if provided
-    else {
-      if (created_at_min) {
-        params.append("created_at_min", created_at_min);
-      }
-      if (created_at_max) {
-        params.append("created_at_max", created_at_max);
-      }
-    }
-    
-    // Add pipeline filters if provided
-    if (pipeline) {
-      // If pipeline is an array, add each pipeline ID separately
-      if (Array.isArray(pipeline)) {
-        pipeline.forEach(p => {
-          params.append("pipeline", p);
+    // Add source if provided
+    if (source) {
+      // If source is an array, add each source separately
+      if (Array.isArray(source)) {
+        source.forEach(s => {
+          params.append("source", s);
         });
-      } 
-      // If it's a single value, add it directly
-      else {
-        params.append("pipeline", pipeline);
+      } else {
+        params.append("source", source);
       }
     }
     
-    if (stage_name) {
-      // If pipeline is an array, add each pipeline ID separately
-      if (Array.isArray(stage_name)) {
-        stage_name.forEach(p => {
-          params.append("stage_name", p);
+    // Add pipeline_name if provided
+    if (pipeline_name) {
+      // If pipeline_name is an array, add each separately
+      if (Array.isArray(pipeline_name)) {
+        pipeline_name.forEach(p => {
+          params.append("pipeline_name", p);
         });
-      } 
-      // If it's a single value, add it directly
-      else {
-        params.append("stage_name", stage_name);
-      }
-    }
-    
-    if (assigned_to) {
-      // If pipeline is an array, add each pipeline ID separately
-      if (Array.isArray(assigned_to)) {
-        assigned_to.forEach(p => {
-          params.append("assigned_to", p);
-        });
-      } 
-      // If it's a single value, add it directly
-      else {
-        params.append("assigned_to", assigned_to);
-      }
-    }
-    
-    if (contact) {
-      // If pipeline is an array, add each pipeline ID separately
-      if (Array.isArray(contact)) {
-        contact.forEach(p => {
-          params.append("contact", p);
-        });
-      } 
-      // If it's a single value, add it directly
-      else {
-        params.append("contact", contact);
-      }
-    }
-    
-    if (opportunity_source) {
-      // If pipeline is an array, add each pipeline ID separately
-      if (Array.isArray(opportunity_source)) {
-        opportunity_source.forEach(p => {
-          params.append("opportunity_source", p);
-        });
-      } 
-      // If it's a single value, add it directly
-      else {
-        params.append("opportunity_source", opportunity_source);
+      } else {
+        params.append("pipeline_name", pipeline_name);
       }
     }
     
     // Make the API request
-    const response = await axiosInstance.get(`/opportunities/?${params.toString()}`);
+    const response = await axiosInstance.get(`/data/opportunities/?${params.toString()}`);
     return response.data;
   },
   
