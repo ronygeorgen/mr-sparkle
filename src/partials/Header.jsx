@@ -32,7 +32,7 @@ function Header({
             </div>
 
             {/* Hamburger button */}
-            <button
+            {/* <button
               className="text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 lg:hidden"
               aria-controls="sidebar"
               aria-expanded={sidebarOpen}
@@ -44,7 +44,7 @@ function Header({
                 <rect x="4" y="11" width="16" height="2" />
                 <rect x="4" y="17" width="16" height="2" />
               </svg>
-            </button>
+            </button> */}
 
           </div>
 
@@ -54,7 +54,7 @@ function Header({
             <ThemeToggle />
             {/*  Divider */}
             <hr className="w-px h-6 bg-gray-200 dark:bg-gray-700/60 border-none" />
-            <UserMenu align="right" />
+            {/* <UserMenu align="right" /> */}
 
           </div>
 

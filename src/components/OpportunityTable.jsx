@@ -267,18 +267,14 @@ const getProbabilityBgColor = (probabilityStr) => {
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0 z-10">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider min-w-[120px]">Company Name</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider min-w-[120px]">Customer Name</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider min-w-[140px]">Opportunity Name</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[180px] hidden sm:table-cell">Contact Details</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[240px] hidden md:table-cell">Pipeline</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px] hidden md:table-cell">Next Step</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px] hidden md:table-cell">Closing Probability</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px] hidden md:table-cell">Pipeline ID</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px] hidden lg:table-cell">Stage</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px] hidden lg:table-cell">Status</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[80px] hidden xl:table-cell">Age (days)</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px] hidden xl:table-cell">Expected Close Date</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px] hidden xl:table-cell">Envisage Date</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px] hidden 2xl:table-cell">Created Date</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px] hidden 2xl:table-cell">Updated Date</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px] hidden 2xl:table-cell">Amount</th>
@@ -287,13 +283,13 @@ const getProbabilityBgColor = (probabilityStr) => {
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {loading ? (
               <tr>
-                <td colSpan="15" className="px-4 py-5 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan="11" className="px-4 py-5 text-center text-gray-500 dark:text-gray-400">
                   Loading...
                 </td>
               </tr>
             ) : opportunities.length === 0 ? (
               <tr>
-                <td colSpan="15" className="px-4 py-5 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan="11" className="px-4 py-5 text-center text-gray-500 dark:text-gray-400">
                   No opportunities found
                 </td>
               </tr>
@@ -303,9 +299,6 @@ const getProbabilityBgColor = (probabilityStr) => {
                 const contactDetails = getContactDetails(opportunity.contact);
                 return (
                   <tr key={opportunity.ghl_id || opportunity.id} className={rowBg}>
-                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[120px]">
-                      {(opportunity.assigned_to?.first_name || opportunity.assigned?.first_name || 'N/A') + ' ' + (opportunity.assigned_to?.last_name || opportunity.assigned?.last_name || '')}
-                    </td>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[120px]">
                       {getFullName(opportunity.contact)}
                     </td>
@@ -323,15 +316,8 @@ const getProbabilityBgColor = (probabilityStr) => {
                         {opportunity.pipeline?.name || 'N/A'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 min-w-[120px] hidden md:table-cell">
-                      <span className="px-2 py-1 text-xs font-medium rounded-full text-gray-900 dark:text-gray-100">
-                        {opportunity.next_step?.name || 'N/A'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 min-w-[120px] hidden md:table-cell">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getProbabilityBgColor(opportunity.custom_fields?.chances_of_closing_the_deal)}`}>
-                        {formatProbability(opportunity.custom_fields?.chances_of_closing_the_deal) || 'N/A'}
-                      </span>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[120px] hidden md:table-cell">
+                      {opportunity.pipeline?.pipeline_id || 'N/A'}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[100px] hidden lg:table-cell">
                       {opportunity.current_stage?.name || 'N/A'}
@@ -345,12 +331,6 @@ const getProbabilityBgColor = (probabilityStr) => {
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[80px] hidden xl:table-cell">
                       {calculateAge(opportunity.created_at || opportunity.created_timestamp)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[120px] hidden xl:table-cell">
-                      N/A
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[120px] hidden xl:table-cell">
-                      N/A
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 min-w-[100px] hidden 2xl:table-cell">
                       {formatDate(opportunity.created_at || opportunity.created_timestamp)}
