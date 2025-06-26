@@ -365,11 +365,6 @@ function Dashboard() {
                           onClick={() => handleKpiClick('jobs')}
                         />
                       </div>
-                      <div>
-                        <ConversionRateGauge 
-                          percentage={parseFloat(sales_performance?.conversion_rate.toFixed(1))} 
-                        />
-                      </div>
             
                       <div>
                         <KpiCard 
@@ -387,6 +382,13 @@ function Dashboard() {
                           subtitle="This Period"
                         />
                       </div>
+
+                      <div>
+                        <ConversionRateGauge 
+                          percentage={parseFloat(sales_performance?.conversion_rate.toFixed(1))} 
+                        />
+                      </div>
+
                     </div>
                     <div className="text-xs text-gray-400 mt-4">
                       <span>Leads Generated, Quotes Sent: GHL</span> &nbsp;|&nbsp; <span>Jobs Booked: ServiceM8</span>

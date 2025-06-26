@@ -36,7 +36,7 @@ export const FiscalPeriodProvider = ({ children }) => {
 
   const [selectedPeriodIndex, setSelectedPeriodIndex] = useState(PERIOD_TYPES.LAST_7_DAYS) // Default: Last 7 Days
   const [dateRange, setDateRange] = useState({
-    from: subDays(today, 6), // Last 7 days includes today
+    from: subDays(today, 7), // Last 7 days includes today
     to: today,
   })
 
