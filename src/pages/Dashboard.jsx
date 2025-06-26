@@ -370,6 +370,7 @@ function Dashboard() {
                           percentage={parseFloat(sales_performance?.conversion_rate.toFixed(1))} 
                         />
                       </div>
+            
                       <div>
                         <KpiCard 
                           title="Avg. Job Value" 
