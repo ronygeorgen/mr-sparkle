@@ -197,7 +197,7 @@ function PieChart({
   }, [data, chart, darkMode]);
 
   return (
-    <div className="grow flex flex-col md:flex-row lg:flex-col xl:flex-row justify-center items-center md:h-80 w-full">
+    <div className="grow flex flex-col md:flex-row xl:flex-row justify-center items-center md:h-80 w-full">
       <div className="w-full md:flex-shrink-0 md:w-[320px] md:h-[320px] flex items-center justify-center">
         <canvas ref={canvas} width={width} height={height}></canvas>
       </div>

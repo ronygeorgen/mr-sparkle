@@ -6,6 +6,8 @@ import Header from '../partials/Header';
 import Datepicker from '../components/Datepicker';
 import DashboardCard04 from '../partials/dashboard/DashboardCard04';
 import DashboardCard06 from '../partials/dashboard/DashboardCard06';
+import DashboardCardSalesPerfMatrics from '../partials/dashboard/DashboardCardProjectedRevenue';
+import DashboardCard01 from '../partials/dashboard/DashboardCard01';
 import KpiCard from '../components/KpiCard';
 import LeadsGeneratedSmallCard from '../components/LeadsGeneratedSmallCard';
 import ConversionRateGauge from '../components/ConversionRateGauge';
@@ -16,6 +18,7 @@ import CardDetailModal from '../components/CardDetailModal';
 import OpportunityTable from '../components/OpportunityTable';
 import { opportunityAPI } from '../features/opportunity/opportunityAPI';
 import SubDatePicker from '../components/SubDatePicker';
+import DashboardCardProjectedRevenue from '../partials/dashboard/DashboardCardProjectedRevenue';
 
 function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -33,7 +36,7 @@ function Dashboard() {
       revenue_ytd: 0,
       revenue_mtd: 0,
       revenue_qtd: 0,
-      cash_collected: 0,
+      cash_collected: { total: 0, timeframe: "" },
       projected_revenue_week1: 0,
       projected_revenue_week2: 0,
       pipeline_value: 0
@@ -192,7 +195,8 @@ function Dashboard() {
           financial_metrics: {
             ...prev.financial_metrics,
             ...(restOfData.financial_metrics || {}),
-            ...(revenueMetricsRes.data || {})
+            ...(revenueMetricsRes.data || {}),
+            cash_collected: dashboardRes.data.cash_collected || { total: 0, timeframe: "" }
           }
         }));
         
@@ -286,24 +290,7 @@ function Dashboard() {
                   onClick={() => handleKpiClick('revenue_qtd')}
                 />
               </div>
-              <div className="sm:col-span-1">
-                <KpiCard 
-                  title="Cash Collected" 
-                  value={dashboardData.financial_metrics?.cash_collected.toFixed(2)} 
-                  unit="$" 
-                  subtitle="Selected Period"
-                  className="text-4xl font-extrabold py-8"
-                />
-              </div>
-              <div className="sm:col-span-1">
-                <KpiCard 
-                  title="Projected Revenue (Week 2)" 
-                  value={dashboardData.financial_metrics?.projected_revenue_week2.toFixed(2)} 
-                  unit="$" 
-                  subtitle="Week After Next"
-                  className="text-4xl font-extrabold py-8"
-                />
-              </div>
+
               <div className="sm:col-span-1">
                 <KpiCard 
                   title="Pipeline Value" 
@@ -338,7 +325,7 @@ function Dashboard() {
                 </div>
 
                 {/* Sales Performance Section */}
-                <div className="col-span-full lg:col-span-6 flex flex-col bg-white dark:bg-gray-800 shadow-md rounded-xl h-full">
+                <div className="col-span-full lg:col-span-9 flex flex-col bg-white dark:bg-gray-800 shadow-md rounded-xl h-full">
                   <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
                     <div className="flex items-center justify-between gap-4">
                       <h2 className="font-semibold text-gray-800 dark:text-gray-100">Sales Performance</h2>
@@ -382,6 +369,14 @@ function Dashboard() {
                           subtitle="This Period"
                         />
                       </div>
+                      <div>
+                        <KpiCard 
+                          title="Cash Collected" 
+                          value={dashboardData.financial_metrics?.cash_collected?.total?.toFixed(2) || 0} 
+                          unit="$" 
+                          subtitle={dashboardData.financial_metrics?.cash_collected?.timeframe || "This Period"}
+                        />
+                      </div>
 
                       <div>
                         <ConversionRateGauge 
@@ -396,12 +391,15 @@ function Dashboard() {
                   </div>
                 </div>
                 
+                <div className="col-span-full lg:col-span-3">
+                  <DashboardCard07 />
+                </div>
                 {/* Pie chart */}
-                <div className="col-span-full lg:col-span-6 h-full">
+                <div className="col-span-full lg:col-span-9 h-full">
                   <DashboardCard06 />
                 </div>
-                <div className="col-span-full lg:col-span-4">
-                  <DashboardCard07 />
+                <div className="col-span-full lg:col-span-3">
+                  <DashboardCardProjectedRevenue projectedRevenue={dashboardData.projected_revenue} />
                 </div>
               </div>
             )}
